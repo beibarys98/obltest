@@ -30,10 +30,8 @@ class School extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['region_id'], 'integer'],
             [['school'], 'required'],
             [['school'], 'string', 'max' => 255],
-            [['region_id'], 'exist', 'skipOnError' => true, 'targetClass' => Region::class, 'targetAttribute' => ['region_id' => 'id']],
         ];
     }
 

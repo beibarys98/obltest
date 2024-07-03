@@ -25,12 +25,24 @@ use yii\web\IdentityInterface;
  */
 class User extends ActiveRecord implements IdentityInterface
 {
+    public $password;
+
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
         return '{{%user}}';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function rules()
+    {
+        return [
+            ['password', 'string', 'min' => Yii::$app->params['user.passwordMinLength']],
+        ];
     }
 
     /**

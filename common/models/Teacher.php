@@ -10,11 +10,8 @@ use Yii;
  * @property int $id
  * @property int|null $user_id
  * @property string|null $name
- * @property int|null $region_id
  * @property int|null $school_id
  * @property int|null $subject_id
- *
- * @property Region $region
  * @property School $school
  * @property Subject $subject
  * @property User $user
@@ -35,12 +32,11 @@ class Teacher extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'region_id', 'school_id', 'subject_id'], 'required'],
+            [['name', 'school_id', 'subject_id'], 'required'],
 
-            [['user_id', 'region_id', 'school_id', 'subject_id'], 'integer'],
+            [['user_id', 'school_id', 'subject_id'], 'integer'],
             [['name'], 'string', 'max' => 255],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'id']],
-            [['region_id'], 'exist', 'skipOnError' => true, 'targetClass' => Region::class, 'targetAttribute' => ['region_id' => 'id']],
             [['school_id'], 'exist', 'skipOnError' => true, 'targetClass' => School::class, 'targetAttribute' => ['school_id' => 'id']],
             [['subject_id'], 'exist', 'skipOnError' => true, 'targetClass' => Subject::class, 'targetAttribute' => ['subject_id' => 'id']],
         ];
@@ -55,20 +51,9 @@ class Teacher extends \yii\db\ActiveRecord
             'id' => Yii::t('app', 'ID'),
             'user_id' => Yii::t('app', 'User ID'),
             'name' => Yii::t('app', 'Name'),
-            'region_id' => Yii::t('app', 'Region ID'),
             'school_id' => Yii::t('app', 'School ID'),
             'subject_id' => Yii::t('app', 'Subject ID'),
         ];
-    }
-
-    /**
-     * Gets query for [[Region]].
-     *
-     * @return \yii\db\ActiveQuery|\common\models\query\RegionQuery
-     */
-    public function getRegion()
-    {
-        return $this->hasOne(Region::class, ['id' => 'region_id']);
     }
 
     /**

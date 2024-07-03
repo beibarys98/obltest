@@ -2,7 +2,7 @@
 
 /** @var yii\web\View $this */
 /** @var yii\bootstrap5\ActiveForm $form */
-/** @var \frontend\models\SignupForm $model */
+/** @var SignupForm $model */
 
 /**
  * @var $model2
@@ -12,12 +12,13 @@
  * @var $subjects
  */
 
-use common\models\Region;
 use common\models\School;
 use common\models\Subject;
+use frontend\models\SignupForm;
 use yii\bootstrap5\Html;
 use yii\bootstrap5\ActiveForm;
 use yii\helpers\ArrayHelper;
+use kartik\select2\Select2;
 
 $this->title = 'Signup';
 ?>
@@ -33,27 +34,16 @@ $this->title = 'Signup';
                 <?= $form->field($model, 'username')->textInput() ?>
 
                 <?php
-                $regions = ArrayHelper::map(Region::find()->all(), 'id', 'region');
+                $schools = ArrayHelper::map(School::find()->all(), 'id', 'name');
                 ?>
 
-                <?= $form->field($model2, 'region_id')->dropDownList(
-                    $regions,
-                    [
-                        'prompt' => 'Select Region',
-                        'onchange' => 'this.form.submit()'
-                    ]
-                ) ?>
-
-                <?php
-                $schools = [];
-                if ($model2->region_id) {
-                    $schools = ArrayHelper::map(School::find()->where(['region_id' => $model2->region_id])->all(), 'id', 'school');
-                }
-                ?>
-
-                <?= $form->field($model2, 'school_id')->dropDownList(
-                    $schools,
-                    ['prompt' => 'Select School']) ?>
+                <?= $form->field($model2, 'school_id')->widget(Select2::classname(), [
+                    'data' => $schools,
+                    'options' => ['placeholder' => 'Select School'],
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ],
+                ]);?>
 
                 <?php
                 $subjects = ArrayHelper::map(Subject::find()->all(), 'id', 'subject');

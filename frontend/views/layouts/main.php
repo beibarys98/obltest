@@ -3,14 +3,17 @@
 /** @var \yii\web\View $this */
 /** @var string $content */
 
+use common\models\Admin;
 use common\widgets\Alert;
 use frontend\assets\AppAsset;
 use yii\bootstrap5\Breadcrumbs;
 use yii\bootstrap5\Html;
 use yii\bootstrap5\Nav;
 use yii\bootstrap5\NavBar;
+use kartik\select2\Select2Asset;
 
 AppAsset::register($this);
+Select2Asset::register($this);
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
@@ -34,8 +37,14 @@ AppAsset::register($this);
             'class' => 'navbar navbar-expand-md navbar-dark bg-dark fixed-top',
         ],
     ]);
-    $menuItems = [
-    ];
+    $menuItems = [];
+
+    if(Admin::findOne(['user_id' => Yii::$app->user->id])){
+        $menuItems[] = ['label' => 'Teachers', 'url' => ['/teacher/index']];
+        $menuItems[] = ['label' => 'Schools', 'url' => ['/school/index']];
+        $menuItems[] = ['label' => 'Subjects', 'url' => ['/subject/index']];
+        $menuItems[] = ['label' => 'Tests', 'url' => ['/test/index']];
+    }
 
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav me-auto mb-2 mb-md-0'],

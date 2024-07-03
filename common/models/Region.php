@@ -8,9 +8,9 @@ use Yii;
  * This is the model class for table "{{%region}}".
  *
  * @property int $id
- * @property string $region
+ * @property string|null $region
  *
- * @property Teacher[] $teachers
+ * @property School[] $schools
  */
 class Region extends \yii\db\ActiveRecord
 {
@@ -28,7 +28,6 @@ class Region extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['region'], 'required'],
             [['region'], 'string', 'max' => 255],
         ];
     }
@@ -45,13 +44,13 @@ class Region extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[Teachers]].
+     * Gets query for [[Schools]].
      *
-     * @return \yii\db\ActiveQuery|\common\models\query\TeacherQuery
+     * @return \yii\db\ActiveQuery|\common\models\query\SchoolQuery
      */
-    public function getTeachers()
+    public function getSchools()
     {
-        return $this->hasMany(Teacher::class, ['region_id' => 'id']);
+        return $this->hasMany(School::class, ['region_id' => 'id']);
     }
 
     /**
