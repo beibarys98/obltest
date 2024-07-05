@@ -11,15 +11,14 @@ use yii\widgets\Pjax;
 /** @var common\models\SchoolSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = Yii::t('app', 'Schools');
-$this->params['breadcrumbs'][] = $this->title;
+$this->title = Yii::t('app', 'Школы');
 ?>
 <div class="school-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a(Yii::t('app', 'Create School'), ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a(Yii::t('app', 'Добавить школу'), ['create'], ['class' => 'btn btn-success']) ?>
     </p>
 
     <?php Pjax::begin(); ?>
@@ -34,9 +33,19 @@ $this->params['breadcrumbs'][] = $this->title;
         'columns' => [
 
             'id',
-            'region_id',
-            'town',
-            'name',
+            [
+                'attribute' => 'region_id',
+                'label' => 'Регион',
+                'value' => 'region.region',
+            ],
+            [
+                'attribute' => 'town',
+                'label' => 'Район'
+            ],
+            [
+                'attribute' => 'name',
+                'label' => 'Имя'
+            ],
             [
                 'class' => ActionColumn::className(),
                 'urlCreator' => function ($action, School $model, $key, $index, $column) {

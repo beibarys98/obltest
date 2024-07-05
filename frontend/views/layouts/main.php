@@ -40,10 +40,10 @@ Select2Asset::register($this);
     $menuItems = [];
 
     if(Admin::findOne(['user_id' => Yii::$app->user->id])){
-        $menuItems[] = ['label' => 'Teachers', 'url' => ['/teacher/index']];
-        $menuItems[] = ['label' => 'Schools', 'url' => ['/school/index']];
-        $menuItems[] = ['label' => 'Subjects', 'url' => ['/subject/index']];
-        $menuItems[] = ['label' => 'Tests', 'url' => ['/test/index']];
+        $menuItems[] = ['label' => 'Пользователи', 'url' => ['/teacher/index']];
+        $menuItems[] = ['label' => 'Школы', 'url' => ['/school/index']];
+        $menuItems[] = ['label' => 'Предметы', 'url' => ['/subject/index']];
+        $menuItems[] = ['label' => 'Тесты', 'url' => ['/test/index']];
     }
 
     echo Nav::widget([

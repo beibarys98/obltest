@@ -10,15 +10,14 @@ use yii\widgets\Pjax;
 /** @var common\models\SubjectSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = Yii::t('app', 'Subjects');
-$this->params['breadcrumbs'][] = $this->title;
+$this->title = Yii::t('app', 'Предметы');
 ?>
 <div class="subject-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a(Yii::t('app', 'Create Subject'), ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a(Yii::t('app', 'Добавить предмет'), ['create'], ['class' => 'btn btn-success']) ?>
     </p>
 
     <?php Pjax::begin(); ?>
@@ -30,7 +29,10 @@ $this->params['breadcrumbs'][] = $this->title;
         'columns' => [
 
             'id',
-            'subject',
+            [
+                'attribute' => 'subject',
+                'label' => 'Предмет'
+            ],
             [
                 'class' => ActionColumn::className(),
                 'urlCreator' => function ($action, Subject $model, $key, $index, $column) {

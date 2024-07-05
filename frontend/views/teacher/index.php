@@ -10,15 +10,14 @@ use yii\widgets\Pjax;
 /** @var common\models\TeacherSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = Yii::t('app', 'Teachers');
-$this->params['breadcrumbs'][] = $this->title;
+$this->title = Yii::t('app', 'Пользователи');
 ?>
 <div class="teacher-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a(Yii::t('app', 'Create Teacher'), ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a(Yii::t('app', 'Добавить пользователя'), ['create'], ['class' => 'btn btn-success']) ?>
     </p>
 
     <?php Pjax::begin(); ?>
@@ -30,13 +29,18 @@ $this->params['breadcrumbs'][] = $this->title;
         'columns' => [
 
             'id',
-            'name',
+            [
+                'attribute' => 'name',
+                'label' => 'Имя'
+            ],
             [
                 'attribute' => 'school_id',
+                'label' => 'Школа',
                 'value' => 'school.name'
             ],
             [
                 'attribute' => 'subject_id',
+                'label' => 'Предмет',
                 'value' => 'subject.subject'
             ],
             [

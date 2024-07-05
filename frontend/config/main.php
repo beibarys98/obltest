@@ -7,7 +7,9 @@ $params = array_merge(
 );
 
 return [
+    'language' => 'ru',
     'name' => 'Obl Test',
+
     'id' => 'app-frontend',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],

@@ -12,8 +12,6 @@ use yii\helpers\Html;
 /** @var $model2*/
 
 $this->title = Yii::t('app', 'Create Teacher');
-$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Teachers'), 'url' => ['index']];
-$this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="teacher-create">
 
@@ -21,9 +19,9 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <?php $form = ActiveForm::begin(); ?>
 
-    <?= $form->field($model2, 'name')->textInput(['autofocus' => true]) ?>
+    <?= $form->field($model2, 'name')->textInput(['autofocus' => true])->label('Имя') ?>
 
-    <?= $form->field($model, 'username')->textInput() ?>
+    <?= $form->field($model, 'username')->textInput()->label('Логин') ?>
 
     <?php
     $schools = ArrayHelper::map(School::find()->all(), 'id', 'name');
@@ -31,11 +29,11 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <?= $form->field($model2, 'school_id')->widget(Select2::classname(), [
         'data' => $schools,
-        'options' => ['placeholder' => 'Select School'],
+        'options' => ['placeholder' => 'Выберите школу'],
         'pluginOptions' => [
             'allowClear' => true
         ],
-    ]);?>
+    ])->label('Школа');?>
 
     <?php
     $subjects = ArrayHelper::map(Subject::find()->all(), 'id', 'subject');
@@ -43,12 +41,12 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <?= $form->field($model2, 'subject_id')->dropDownList(
         $subjects,
-        ['prompt' => 'Select Subject']) ?>
+        ['prompt' => 'Выберите предмет'])->label('Предмет') ?>
 
-    <?= $form->field($model, 'password')->passwordInput() ?>
+    <?= $form->field($model, 'password')->passwordInput()->label('Пароль') ?>
 
     <div class="form-group mt-3">
-        <?= Html::submitButton(Yii::t('app', 'Save'), ['class' => 'btn btn-success']) ?>
+        <?= Html::submitButton(Yii::t('app', 'Сохранить'), ['class' => 'btn btn-success']) ?>
     </div>
 
     <?php ActiveForm::end(); ?>

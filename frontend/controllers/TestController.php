@@ -5,6 +5,8 @@ namespace frontend\controllers;
 use common\models\Question;
 use common\models\Test;
 use common\models\TestSearch;
+use Yii;
+use yii\data\ActiveDataProvider;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -14,9 +16,6 @@ use yii\filters\VerbFilter;
  */
 class TestController extends Controller
 {
-    /**
-     * @inheritDoc
-     */
     public function behaviors()
     {
         return array_merge(
@@ -32,28 +31,27 @@ class TestController extends Controller
         );
     }
 
-    /**
-     * Lists all Test models.
-     *
-     * @return string
-     */
     public function actionIndex()
     {
-        $searchModel = new TestSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams);
+        $dataProvider = new ActiveDataProvider([
+            'query' => Test::find()->andWhere(['status' => 'загрузите формулы']),
+        ]);
+
+        $dataProvider2 = new ActiveDataProvider([
+            'query' => Test::find()->andWhere(['status' => 'готов к публикаций'])
+        ]);
+
+        $dataProvider3 = new ActiveDataProvider([
+            'query' => Test::find()->andWhere(['status' => 'опубликован'])
+        ]);
 
         return $this->render('index', [
-            'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'dataProvider2' => $dataProvider2,
+            'dataProvider3' => $dataProvider3,
         ]);
     }
 
-    /**
-     * Displays a single Test model.
-     * @param int $id ID
-     * @return string
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     public function actionView($id)
     {
         $model2 = Question::find()->andWhere(['test_id' => $id])->all();
@@ -64,11 +62,6 @@ class TestController extends Controller
         ]);
     }
 
-    /**
-     * Creates a new Test model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return string|\yii\web\Response
-     */
     public function actionCreate()
     {
         $model = new Test();
@@ -80,8 +73,10 @@ class TestController extends Controller
                 if($model->has_equation){
                     $model->status = 'загрузите формулы';
                 }else{
-                    $model->status = 'ожидает начала';
+                    $model->status = 'готов к публикаций';
                 }
+
+                $model->save();
 
                 $lines = explode("\n", $model->test);
 
@@ -91,6 +86,7 @@ class TestController extends Controller
 
                     if (count($data) == 6) { // Ensure there are at least 5 elements (question, 4 answers, correct answer)
                         $questionModel = new Question();
+                        $questionModel->test_id = $model->id;
                         $questionModel->number = $number;
                         $questionModel->question = trim($data[0]);
                         $questionModel->answer1 = trim($data[1]);
@@ -99,21 +95,12 @@ class TestController extends Controller
                         $questionModel->answer4 = trim($data[4]);
                         $questionModel->correct_answer = trim($data[5]);
 
-                        $questions[] = $questionModel;
+                        $questionModel->save();
 
                         $number++;
                     }
                 }
-
-                if ($model->save()) {
-                    // If $model->save() succeeds, you can save each Question model in $questions array
-                    foreach ($questions as $question) {
-                        $question->test_id = $model->id; // Assuming test_id is the foreign key linking Test and Question models
-                        $question->save(); // Save each Question model
-                    }
-
-                    return $this->redirect(['view', 'id' => $model->id]);
-                }
+                return $this->redirect(['view', 'id' => $model->id]);
             }
         } else {
             $model->loadDefaultValues();
@@ -124,47 +111,56 @@ class TestController extends Controller
         ]);
     }
 
-    /**
-     * Updates an existing Test model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id ID
-     * @return string|\yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
+    public function actionPublish($id){
+        $test = Test::findOne($id);
+        $test->status = 'опубликован';
+        $test->save(false);
+
+        return $this->redirect(['index']);
+    }
+
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        $model2 = Question::find()->andWhere(['test_id' => $id])->all();
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+        $dataArray = Yii::$app->request->post('data');
+
+        if (!empty($dataArray)) {
+            foreach ($dataArray as $id => $value) {
+                $questionModel = Question::findOne($id);
+                if ($questionModel) {
+                    $questionModel->question = $value['question'];
+                    $questionModel->answer1 = $value['answer1'];
+                    $questionModel->answer2 = $value['answer2'];
+                    $questionModel->answer3 = $value['answer3'];
+                    $questionModel->answer4 = $value['answer4'];
+                    $questionModel->correct_answer = $value['correct_answer'];
+                    $questionModel->save(false);
+                }
+            }
+            if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
+                return $this->redirect(['view', 'id' => $model->id]);
+            }
         }
 
         return $this->render('update', [
             'model' => $model,
+            'model2' => $model2,
         ]);
     }
 
-    /**
-     * Deletes an existing Test model.
-     * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param int $id ID
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     public function actionDelete($id)
     {
+        $questions = Question::find()->where(['test_id' => $id])->all();
+        foreach ($questions as $question) {
+            $question->delete();
+        }
         $this->findModel($id)->delete();
 
         return $this->redirect(['index']);
     }
 
-    /**
-     * Finds the Test model based on its primary key value.
-     * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param int $id ID
-     * @return Test the loaded model
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     protected function findModel($id)
     {
         if (($model = Test::findOne(['id' => $id])) !== null) {
