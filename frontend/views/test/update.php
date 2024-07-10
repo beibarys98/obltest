@@ -21,7 +21,9 @@ $this->title = Yii::t('app', '{name}', [
 
     <?= $form->field($model, 'title')->textInput(['style' => 'font-size: 24px;'])->label(false)?>
 
-    <br>
+    <div class="mt-2">
+        <?= $form->field($model, 'has_equation')->checkbox(['class' => 'form-check-input'])->label('Есть формулы') ?>
+    </div>
 
     <?php foreach ($model2 as $m2): ?>
         <div style="font-size: 24px;">
@@ -32,9 +34,6 @@ $this->title = Yii::t('app', '{name}', [
                 <label class="w-50">
                     <input type="text" name="data[<?= $m2->id?>][question]" value="<?= $m2->question?>" class="form-control">
                 </label>
-                <div class="ms-1">
-                    <?= Html::a('Добавить формулу', ['formula'], ['class' => 'btn btn-secondary'])?>
-                </div>
             </div>
 
             <div class="d-flex mt-1">

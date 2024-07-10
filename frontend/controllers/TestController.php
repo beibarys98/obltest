@@ -2,6 +2,7 @@
 
 namespace frontend\controllers;
 
+use common\models\Formula;
 use common\models\Question;
 use common\models\Test;
 use common\models\TestSearch;
@@ -10,6 +11,7 @@ use yii\data\ActiveDataProvider;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\web\UploadedFile;
 
 /**
  * TestController implements the CRUD actions for Test model.
@@ -119,6 +121,32 @@ class TestController extends Controller
         return $this->redirect(['index']);
     }
 
+    public function actionFormula($id){
+        $test = Test::findOne($id);
+        $questions = Question::find()->andWhere(['test_id' => $id])->all();
+        $formula = new Formula();
+
+        if (Yii::$app->request->isPost) {
+            $formula->files = UploadedFile::getInstances($formula, 'files');
+            foreach ($formula->files as $file) {
+                $filePath = Yii::getAlias('@frontend') . '/web/formulas/'
+                    . Yii::$app->security->generateRandomString()
+                    . '.' . $file->extension;
+                if($file->saveAs($filePath)){
+                    $formula->path = $filePath;
+                    $formula->save(false);
+                }
+            }
+            return $this->redirect(['view', 'id' => $id]);
+        }
+
+        return $this->render('formula', [
+            'test' => $test,
+            'questions' => $questions,
+            'formula' => $formula
+        ]);
+    }
+
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
@@ -139,7 +167,16 @@ class TestController extends Controller
                     $questionModel->save(false);
                 }
             }
-            if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
+            if ($this->request->isPost && $model->load($this->request->post())) {
+
+                if($model->has_equation){
+                    $model->status = 'загрузите формулы';
+                }else{
+                    $model->status = 'готов к публикаций';
+                }
+
+                $model->save(false);
+
                 return $this->redirect(['view', 'id' => $model->id]);
             }
         }

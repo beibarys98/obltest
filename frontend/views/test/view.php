@@ -15,13 +15,24 @@ $this->title = $model->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a(Yii::t('app', 'Опубликовать'), ['publish', 'id' => $model->id], ['class' => 'btn btn-success']) ?>
-        <?= Html::a(Yii::t('app', 'Редактировать'), ['update', 'id' => $model->id], ['class' => 'btn btn-warning']) ?>
-        <?= Html::a(Yii::t('app', 'Удалить'), ['delete', 'id' => $model->id], [
-            'class' => 'btn btn-danger',
-            'data' => [
-                'confirm' => Yii::t('app', 'Вы уверены что хотите удалить?'),
-                'method' => 'post',
+        <?= Html::a(Yii::t('app', 'Опубликовать'),
+            ['publish', 'id' => $model->id],
+            ['class' => 'btn btn-success']) ?>
+        <?= $model->has_equation
+            ? Html::a(Yii::t('app', 'Формулы'),
+                ['formula', 'id' => $model->id],
+                ['class' => 'btn btn-primary'])
+            : null ?>
+        <?= Html::a(Yii::t('app', 'Изменить'),
+            ['update', 'id' => $model->id],
+            ['class' => 'btn btn-warning']) ?>
+        <?= Html::a(Yii::t('app', 'Удалить'),
+            ['delete', 'id' => $model->id],
+            [
+                'class' => 'btn btn-danger',
+                'data' => [
+                    'confirm' => Yii::t('app', 'Вы уверены что хотите удалить?'),
+                    'method' => 'post',
             ],
         ]) ?>
     </p>
