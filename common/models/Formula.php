@@ -16,7 +16,7 @@ use Yii;
  */
 class Formula extends \yii\db\ActiveRecord
 {
-    public $files;
+    public $file;
 
     /**
      * {@inheritdoc}
@@ -32,7 +32,7 @@ class Formula extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['files'], 'file', 'skipOnEmpty' => false, 'extensions' => 'png, jpg, jpeg', 'maxFiles' => 100],
+            [['file'], 'file', 'skipOnEmpty' => false, 'extensions' => 'png, jpg, jpeg'],
 
             [['question_id'], 'integer'],
             [['type', 'path'], 'string', 'max' => 255],

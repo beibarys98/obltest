@@ -56,11 +56,11 @@ class TestController extends Controller
 
     public function actionView($id)
     {
-        $model2 = Question::find()->andWhere(['test_id' => $id])->all();
+        $questions = Question::find()->andWhere(['test_id' => $id])->all();
 
         return $this->render('view', [
-            'model' => $this->findModel($id),
-            'model2' => $model2,
+            'test' => $this->findModel($id),
+            'questions' => $questions,
         ]);
     }
 
@@ -124,27 +124,42 @@ class TestController extends Controller
     public function actionFormula($id){
         $test = Test::findOne($id);
         $questions = Question::find()->andWhere(['test_id' => $id])->all();
-        $formula = new Formula();
-
-        if (Yii::$app->request->isPost) {
-            $formula->files = UploadedFile::getInstances($formula, 'files');
-            foreach ($formula->files as $file) {
-                $filePath = Yii::getAlias('@frontend') . '/web/formulas/'
-                    . Yii::$app->security->generateRandomString()
-                    . '.' . $file->extension;
-                if($file->saveAs($filePath)){
-                    $formula->path = $filePath;
-                    $formula->save(false);
-                }
-            }
-            return $this->redirect(['view', 'id' => $id]);
-        }
 
         return $this->render('formula', [
             'test' => $test,
             'questions' => $questions,
-            'formula' => $formula
         ]);
+    }
+
+    public function actionAddFormula($id, $t){
+        $question = Question::findOne($id);
+        $formula = new Formula();
+
+        if (Yii::$app->request->isPost) {
+            $file = UploadedFile::getInstance($formula, 'file');
+            $filePath = Yii::getAlias('@web') .'formulas/'
+                . Yii::$app->security->generateRandomString(8) . '.' . $file->extension;
+            if ($file->saveAs($filePath)) {
+                $formula->question_id = $id;
+                $formula->type = $t;
+                $formula->path = $filePath;
+                $formula->save(false);
+                return $this->redirect(['formula', 'id' => $question->test_id]);
+            }
+        }
+
+        return $this->render('add-formula', [
+            'question' => $question,
+            'type' => $t,
+            'formula' => $formula,
+        ]);
+    }
+
+    public function actionDeleteFormula($id, $test_id){
+        $formula = Formula::findOne($id);
+        unlink($formula->path);
+        $formula->delete();
+        return $this->redirect(['formula', 'id' => $test_id]);
     }
 
     public function actionUpdate($id)

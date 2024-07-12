@@ -2,11 +2,17 @@
 
 namespace frontend\controllers;
 
+use common\models\Admin;
+use common\models\Question;
 use common\models\Teacher;
+use common\models\Test;
+use common\models\User;
 use frontend\models\ResendVerificationEmailForm;
 use frontend\models\VerifyEmailForm;
+use kartik\mpdf\Pdf;
 use Yii;
 use yii\base\InvalidArgumentException;
+use yii\data\ActiveDataProvider;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
@@ -16,6 +22,7 @@ use frontend\models\PasswordResetRequestForm;
 use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
 use frontend\models\ContactForm;
+use yii\web\NotFoundHttpException;
 
 /**
  * Site controller
@@ -80,7 +87,52 @@ class SiteController extends Controller
             return $this->redirect(['login']);
         }
 
-        return $this->render('index');
+        if(Admin::findOne(Yii::$app->user->id)){
+            return $this->redirect(['test/index']);
+        }
+
+        $teacher = Teacher::findOne(['user_id' => Yii::$app->user->id]);
+
+        $test = new ActiveDataProvider([
+            'query' => Test::find()->andWhere(['subject_id' => $teacher->subject_id]),
+        ]);
+
+        return $this->render('index', [
+            'test' => $test,
+        ]);
+    }
+
+    public function actionView($id)
+    {
+        $questions = Question::find()->andWhere(['test_id' => $id])->all();
+
+        return $this->render('view', [
+            'test' => Test::findOne($id),
+            'questions' => $questions,
+        ]);
+    }
+
+    public function actionSubmit()
+    {
+        if (Yii::$app->request->isPost) {
+            $postData = Yii::$app->request->post('answers', []);
+            $filteredAnswers = array_filter($postData, function($value) {
+                return !empty($value);
+            });
+            $content = $this->renderPartial('result', [
+                'answers' => $filteredAnswers
+            ]);
+
+            $pdf = new Pdf([
+                'mode' => Pdf::MODE_UTF8,
+                'content' => $content,
+                'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
+                'cssInline' => '.kv-heading-1{font-size:18px}'
+            ]);
+            return $pdf->render();
+        }
+
+        throw new NotFoundHttpException('The requested page does not exist.');
     }
 
     /**

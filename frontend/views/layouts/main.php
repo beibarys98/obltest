@@ -11,6 +11,7 @@ use yii\bootstrap5\Html;
 use yii\bootstrap5\Nav;
 use yii\bootstrap5\NavBar;
 use kartik\select2\Select2Asset;
+use yii\helpers\Url;
 
 AppAsset::register($this);
 Select2Asset::register($this);
@@ -32,14 +33,14 @@ Select2Asset::register($this);
     <?php
     NavBar::begin([
         'brandLabel' => Yii::$app->name,
-        'brandUrl' => Yii::$app->homeUrl,
+        'brandUrl' => Admin::findOne(Yii::$app->user->id) ? Url::to('/test/index') : Yii::$app->homeUrl,
         'options' => [
             'class' => 'navbar navbar-expand-md navbar-dark bg-dark fixed-top',
         ],
     ]);
     $menuItems = [];
 
-    if(Admin::findOne(['user_id' => Yii::$app->user->id])){
+    if(Admin::findOne(Yii::$app->user->id)){
         $menuItems[] = ['label' => 'Пользователи', 'url' => ['/teacher/index']];
         $menuItems[] = ['label' => 'Школы', 'url' => ['/school/index']];
         $menuItems[] = ['label' => 'Предметы', 'url' => ['/subject/index']];

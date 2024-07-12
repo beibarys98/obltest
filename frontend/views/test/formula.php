@@ -1,7 +1,9 @@
 <?php
 
+use common\models\Formula;
 use yii\bootstrap5\ActiveForm;
 use yii\helpers\Html;
+use yii\helpers\Url;
 use yii\widgets\DetailView;
 
 /** @var yii\web\View $this */
@@ -16,28 +18,40 @@ $this->title = $test->title;
 
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <?php $form = ActiveForm::begin(['options' => ['enctype' => 'multipart/form-data']]) ?>
-
     <?php foreach ($questions as $q): ?>
+
         <div style="font-size: 24px;">
             <?= $q->number . '. '; ?>
             <?= $q->question; ?>
-            <?= $form->field($formula, 'files[]')
-                ->fileInput(['multiple' => true, 'class' => 'w-25'])
-                ->label(false) ?>
-            <?= $form->field($formula, 'question_id')->hiddenInput(['value' => $q->id])->label(false); ?>
-            <?= $form->field($formula, 'type')->hiddenInput(['value' => 'question'])->label(false); ?>
+            <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'question'])):?>
+                <br>
+                <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
+                     class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
+                <?= Html::a('x', ['delete-formula', 'id' => $f->id, 'test_id' => $test->id],
+                    ['class' => 'btn btn-danger'])?>
+            <?php else:?>
+                <br>
+                <?= Html::a('+', ['add-formula', 'id' => $q->id, 't' => 'question'], ['class' => 'btn btn-primary m-1'])?>
+            <?php endif;?>
 
             <div class="d-flex">
                 <?= 'a. '?>
                 <?php if($q->answer1):?>
                 <?= $q->answer1;?>
                 <?php else:?>
-                    <?= $form->field($formula, 'files[]')
-                        ->fileInput(['multiple' => true, 'class' => 'ms-1'])
-                        ->label(false) ?>
-                    <?= $form->field($formula, 'question_id')->hiddenInput(['value' => $q->id])->label(false); ?>
-                    <?= $form->field($formula, 'type')->hiddenInput(['value' => 'answer1'])->label(false); ?>
+                    <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'answer1'])):?>
+                        <br>
+                        <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
+                             class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
+                        <?= Html::a('x', ['delete-formula', 'id' => $f->id, 'test_id' => $test->id],
+                            ['class' => 'btn btn-danger',
+                                'style' => [
+                                    'height' => '40px',
+                                    'margin-top' => '100px'
+                                ]])?>
+                    <?php else:?>
+                        <?= Html::a('+', ['add-formula', 'id' => $q->id, 't' => 'answer1'], ['class' => 'btn btn-primary m-1'])?>
+                    <?php endif;?>
                 <?php endif;?>
             </div>
             <div class="d-flex">
@@ -45,11 +59,19 @@ $this->title = $test->title;
                 <?php if($q->answer2):?>
                     <?= $q->answer2;?>
                 <?php else:?>
-                    <?= $form->field($formula, 'files[]')
-                        ->fileInput(['multiple' => true, 'class' => 'ms-1'])
-                        ->label(false) ?>
-                    <?= $form->field($formula, 'question_id')->hiddenInput(['value' => $q->id])->label(false); ?>
-                    <?= $form->field($formula, 'type')->hiddenInput(['value' => 'answer2'])->label(false); ?>
+                    <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'answer2'])):?>
+                        <br>
+                        <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
+                             class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
+                        <?= Html::a('x', ['delete-formula', 'id' => $f->id, 'test_id' => $test->id],
+                            ['class' => 'btn btn-danger',
+                                'style' => [
+                                    'height' => '40px',
+                                    'margin-top' => '100px'
+                                ]])?>
+                    <?php else:?>
+                        <?= Html::a('+', ['add-formula', 'id' => $q->id, 't' => 'answer2'], ['class' => 'btn btn-primary m-1'])?>
+                    <?php endif;?>
                 <?php endif;?>
             </div>
             <div class="d-flex">
@@ -57,11 +79,19 @@ $this->title = $test->title;
                 <?php if($q->answer3):?>
                     <?= $q->answer3;?>
                 <?php else:?>
-                    <?= $form->field($formula, 'files[]')
-                        ->fileInput(['multiple' => true, 'class' => 'ms-1'])
-                        ->label(false) ?>
-                    <?= $form->field($formula, 'question_id')->hiddenInput(['value' => $q->id])->label(false); ?>
-                    <?= $form->field($formula, 'type')->hiddenInput(['value' => 'answer3'])->label(false); ?>
+                    <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'answer3'])):?>
+                        <br>
+                        <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
+                             class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
+                        <?= Html::a('x', ['delete-formula', 'id' => $f->id, 'test_id' => $test->id],
+                            ['class' => 'btn btn-danger',
+                                'style' => [
+                                    'height' => '40px',
+                                    'margin-top' => '100px'
+                                ]])?>
+                    <?php else:?>
+                        <?= Html::a('+', ['add-formula', 'id' => $q->id, 't' => 'answer3'], ['class' => 'btn btn-primary m-1'])?>
+                    <?php endif;?>
                 <?php endif;?>
             </div>
             <div class="d-flex">
@@ -69,19 +99,30 @@ $this->title = $test->title;
                 <?php if($q->answer4):?>
                     <?= $q->answer4;?>
                 <?php else:?>
-                    <?= $form->field($formula, 'files[]')
-                        ->fileInput(['multiple' => true, 'class' => 'ms-1'])
-                        ->label(false) ?>
-                    <?= $form->field($formula, 'question_id[]')->hiddenInput(['value' => $q->id])->label(false); ?>
-                    <?= $form->field($formula, 'type[]')->hiddenInput(['value' => 'answer4'])->label(false); ?>
+                    <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'answer4'])):?>
+                        <br>
+                        <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
+                             class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
+                        <?= Html::a('x', ['delete-formula', 'id' => $f->id, 'test_id' => $test->id],
+                            ['class' => 'btn btn-danger',
+                                'style' => [
+                                        'height' => '40px',
+                                        'margin-top' => '100px'
+                                ]])?>
+                    <?php else:?>
+                        <?= Html::a('+', ['add-formula', 'id' => $q->id, 't' => 'answer4'], ['class' => 'btn btn-primary m-1'])?>
+                    <?php endif;?>
                 <?php endif;?>
             </div>
         </div>
         <br>
+
+
     <?php endforeach; ?>
 
-    <div class="form-group">
-        <?= Html::submitButton(Yii::t('app', 'Сохранить'),
+    <div class="">
+        <?= Html::a(Yii::t('app', 'Сохранить'),
+            ['test/view', 'id' => $test->id],
             [
                 'class' => 'btn btn-success rounded-circle shadow',
                 'style' => 'position: fixed;
@@ -89,10 +130,11 @@ $this->title = $test->title;
                                 right: 9%;
                                 z-index: 1000;
                                 width: 107px;
-                                height: 107px;'
+                                height: 107px;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;'
             ]) ?>
     </div>
-
-    <?php ActiveForm::end(); ?>
 
 </div>
