@@ -115,12 +115,13 @@ class SiteController extends Controller
     public function actionSubmit()
     {
         if (Yii::$app->request->isPost) {
+            $test = Test::findOne(Yii::$app->request->post('test_id'));
+            $questions = Question::find()->andWhere(['test_id' => $test->id])->all();
             $postData = Yii::$app->request->post('answers', []);
-            $filteredAnswers = array_filter($postData, function($value) {
-                return !empty($value);
-            });
             $content = $this->renderPartial('result', [
-                'answers' => $filteredAnswers
+                'test' => $test,
+                'questions' => $questions,
+                'answers' => $postData
             ]);
 
             $pdf = new Pdf([

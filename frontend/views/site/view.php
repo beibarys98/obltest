@@ -22,6 +22,8 @@ $this->title = $test->title;
         'method' => 'post',
     ]); ?>
 
+    <?= Html::hiddenInput('test_id', $test->id) ?>
+
     <?php foreach ($questions as $q): ?>
         <div style="font-size: 24px;">
             <?= $q->number . '. '; ?>
