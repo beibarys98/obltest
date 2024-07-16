@@ -9,6 +9,7 @@ use yii\widgets\DetailView;
 /** @var yii\web\View $this */
 /** @var common\models\Test $test */
 /** @var $questions*/
+/** @var $answers*/
 
 $this->title = $test->title;
 \yii\web\YiiAsset::register($this);
@@ -79,7 +80,6 @@ $this->title = $test->title;
             </div>
             <div class="d-flex ms-5">
                 <input type="radio" name="answers[<?= $q->id ?>]" value="d" class="form-check-input me-1">
-
                 <?= 'd. '?>
 
                 <?php if($q->answer4):?>
@@ -97,8 +97,12 @@ $this->title = $test->title;
     <?php endforeach; ?>
 
     <div class="text-center mt-4">
-        <?= Html::submitButton('Завершить', ['class' => 'btn btn-success']) ?>
+        <?= Html::submitButton('Завершить', [
+            'class' => 'btn btn-success',
+            'onclick' => 'return confirm("Вы уверены, что хотите завершить?")',
+        ]) ?>
     </div>
+
 
     <?php ActiveForm::end(); ?>
 

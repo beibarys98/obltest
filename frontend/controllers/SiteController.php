@@ -2,14 +2,17 @@
 
 namespace frontend\controllers;
 
+use Imagine\Gd\Imagine;
+use Imagine\Image\Palette\RGB;
+use Imagine\Image\Point;
 use common\models\Admin;
 use common\models\Question;
 use common\models\Teacher;
 use common\models\Test;
-use common\models\User;
 use frontend\models\ResendVerificationEmailForm;
 use frontend\models\VerifyEmailForm;
 use kartik\mpdf\Pdf;
+use Mpdf\Mpdf;
 use Yii;
 use yii\base\InvalidArgumentException;
 use yii\data\ActiveDataProvider;
@@ -102,13 +105,14 @@ class SiteController extends Controller
         ]);
     }
 
-    public function actionView($id)
+    public function actionView($id, $postData = '')
     {
         $questions = Question::find()->andWhere(['test_id' => $id])->all();
 
         return $this->render('view', [
             'test' => Test::findOne($id),
             'questions' => $questions,
+            'answers' => $postData,
         ]);
     }
 
@@ -118,6 +122,14 @@ class SiteController extends Controller
             $test = Test::findOne(Yii::$app->request->post('test_id'));
             $questions = Question::find()->andWhere(['test_id' => $test->id])->all();
             $postData = Yii::$app->request->post('answers', []);
+            $teacher = Teacher::findOne(['user_id' => Yii::$app->user->id]);
+
+            foreach ($questions as $q) {
+                if (!isset($postData[$q->id])) {
+                    $postData[$q->id] = '';
+                }
+            }
+
             $content = $this->renderPartial('result', [
                 'test' => $test,
                 'questions' => $questions,
@@ -130,17 +142,66 @@ class SiteController extends Controller
                 'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
                 'cssInline' => '.kv-heading-1{font-size:18px}'
             ]);
-            return $pdf->render();
-        }
 
+            $pdfOutput = $pdf->render();
+            $pdfFilePath = Yii::getAlias('@webroot/reports/')
+                . $teacher->id
+                . $test->id
+                . '.pdf';
+            file_put_contents($pdfFilePath, $pdfOutput);
+
+            $imgSrc = Yii::getAlias('@webroot/certificates/certificate.jpg');
+            $teacher = Teacher::findOne(['user_id' => Yii::$app->user->id]);
+            $content2 = $this->renderPartial('image', [
+                'imgSrc' => $imgSrc,
+                'teacher' => $teacher,
+            ]);
+
+            $pdf2 = new Pdf([
+                'mode' => Pdf::MODE_UTF8,
+                'content' => $content2,
+                'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
+                'cssInline' => '.kv-heading-1{font-size:18px}',
+                'orientation' => 'L'
+            ]);
+
+            $pdfOutput2 = $pdf2->render();
+            $pdfFilePath2 = Yii::getAlias('@webroot/certificates/')
+                . $teacher->id
+                . $test->id
+                . '.pdf';
+            file_put_contents($pdfFilePath2, $pdfOutput2);
+
+            return $this->redirect(['end', 'id' => $test->id]);
+        }
         throw new NotFoundHttpException('The requested page does not exist.');
     }
 
-    /**
-     * Logs in a user.
-     *
-     * @return mixed
-     */
+    public function actionEnd($id){
+        $test = Test::findOne($id);
+        $teacher = Teacher::findOne(['user_id' => Yii::$app->user->id]);
+
+        $pdfUrl = Yii::$app->request->baseUrl
+            . '/reports/'
+            . $teacher->id
+            . $test->id
+            . '.pdf';
+
+        $imgSrc = Yii::$app->request->baseUrl . '/certificates/certificate.jpg';
+
+        return $this->render('end', [
+            'test' => Test::findOne($id),
+            'pdfUrl' => $pdfUrl,
+            'imgSrc' => $imgSrc
+        ]);
+    }
+
+    public function actionCertificate()
+    {
+        $filePath = Yii::getAlias('@webroot/certificates/certificate.jpg');
+        return Yii::$app->response->sendFile($filePath, 'certificate.jpg');
+    }
+
     public function actionLogin()
     {
         if (!Yii::$app->user->isGuest) {
