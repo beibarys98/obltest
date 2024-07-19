@@ -4,6 +4,7 @@ use common\models\Formula;
 use yii\bootstrap5\ActiveForm;
 use yii\helpers\Html;
 use yii\helpers\Url;
+use yii\web\View;
 use yii\widgets\DetailView;
 
 /** @var yii\web\View $this */
@@ -13,12 +14,23 @@ use yii\widgets\DetailView;
 
 $this->title = $test->title;
 \yii\web\YiiAsset::register($this);
+
+$timezone = new \DateTimeZone('Asia/Karachi'); // Adjust this if needed for GMT+5
+
+$now = new \DateTime('now', $timezone);
+$startTime = new \DateTime($test->start_time, $timezone);
+$endTime = new \DateTime($test->end_time, $timezone);
+
+// Check if the current time is within the start and end times
+$isActive = $now >= $startTime && $now<= $endTime;
 ?>
+
 <div class="test-view">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <?php $form = ActiveForm::begin([
+        'id' => 'myForm',
         'action' => Url::to(['site/submit']),
         'method' => 'post',
     ]); ?>
@@ -102,7 +114,6 @@ $this->title = $test->title;
             'onclick' => 'return confirm("Вы уверены, что хотите завершить?")',
         ]) ?>
     </div>
-
 
     <?php ActiveForm::end(); ?>
 

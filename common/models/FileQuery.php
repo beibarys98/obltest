@@ -1,13 +1,13 @@
 <?php
 
-namespace common\models\query;
+namespace common\models;
 
 /**
- * This is the ActiveQuery class for [[\common\models\Certificate]].
+ * This is the ActiveQuery class for [[File]].
  *
- * @see \common\models\Certificate
+ * @see File
  */
-class CertificateQuery extends \yii\db\ActiveQuery
+class FileQuery extends \yii\db\ActiveQuery
 {
     /*public function active()
     {
@@ -16,7 +16,7 @@ class CertificateQuery extends \yii\db\ActiveQuery
 
     /**
      * {@inheritdoc}
-     * @return \common\models\Certificate[]|array
+     * @return File[]|array
      */
     public function all($db = null)
     {
@@ -25,7 +25,7 @@ class CertificateQuery extends \yii\db\ActiveQuery
 
     /**
      * {@inheritdoc}
-     * @return \common\models\Certificate|array|null
+     * @return File|array|null
      */
     public function one($db = null)
     {

@@ -2,6 +2,8 @@
 
 namespace frontend\controllers;
 
+use common\models\Certificate;
+use common\models\File;
 use Imagine\Gd\Imagine;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
@@ -97,7 +99,9 @@ class SiteController extends Controller
         $teacher = Teacher::findOne(['user_id' => Yii::$app->user->id]);
 
         $test = new ActiveDataProvider([
-            'query' => Test::find()->andWhere(['subject_id' => $teacher->subject_id]),
+            'query' => Test::find()
+                ->andWhere(['subject_id' => $teacher->subject_id])
+                ->andWhere(['status' => 'опубликован']),
         ]);
 
         return $this->render('index', [
@@ -105,14 +109,54 @@ class SiteController extends Controller
         ]);
     }
 
-    public function actionView($id, $postData = '')
+    public function actionView($id)
     {
+        $test = Test::findOne($id);
         $questions = Question::find()->andWhere(['test_id' => $id])->all();
 
-        return $this->render('view', [
+        $timezone = new \DateTimeZone('Asia/Karachi'); // Adjust this if needed for GMT+5
+        $now = new \DateTime('now', $timezone);
+        $startTime = new \DateTime($test->start_time, $timezone);
+        $endTime = new \DateTime($test->end_time, $timezone);
+        $isActive = $now >= $startTime && $now<= $endTime;
+
+        if($isActive){
+            return $this->render('view', [
+                'test' => $test,
+                'questions' => $questions,
+            ]);
+        }else {
+            Yii::$app->session->setFlash('warning', 'Тест не активен!');
+            return $this->redirect(['detail-view']);
+        }
+    }
+
+    public function actionDetailView($id)
+    {
+        $teacher = Teacher::findOne(['user_id' => Yii::$app->user->id]);
+        $test = Test::findOne($id);
+        $file = new ActiveDataProvider([
+            'query' => File::find()
+                ->andWhere(['teacher_id' => $teacher->id])
+                ->andWhere(['test_id' => $id])
+        ]);
+
+        $timezone = new \DateTimeZone('Asia/Karachi'); // Adjust this if needed for GMT+5
+        $now = new \DateTime('now', $timezone);
+        $startTime = new \DateTime($test->start_time, $timezone);
+        $endTime = new \DateTime($test->end_time, $timezone);
+
+        $hasFile = File::find()
+            ->andWhere(['teacher_id' => $teacher->id])
+            ->andWhere(['test_id' => $id])
+            ->exists();
+
+        $isActive = $now >= $startTime && $now<= $endTime && !$hasFile;
+
+        return $this->render('detail-view', [
             'test' => Test::findOne($id),
-            'questions' => $questions,
-            'answers' => $postData,
+            'file' => $file,
+            'isActive' => $isActive,
         ]);
     }
 
@@ -145,61 +189,49 @@ class SiteController extends Controller
 
             $pdfOutput = $pdf->render();
             $pdfFilePath = Yii::getAlias('@webroot/reports/')
-                . $teacher->id
-                . $test->id
+                . Yii::$app->security->generateRandomString(8)
                 . '.pdf';
             file_put_contents($pdfFilePath, $pdfOutput);
 
-            $imgSrc = Yii::getAlias('@webroot/certificates/certificate.jpg');
-            $teacher = Teacher::findOne(['user_id' => Yii::$app->user->id]);
-            $content2 = $this->renderPartial('image', [
-                'imgSrc' => $imgSrc,
-                'teacher' => $teacher,
-            ]);
+            $report = new File();
+            $report->teacher_id = $teacher->id;
+            $report->test_id = $test->id;
+            $report->path = $pdfFilePath;
+            $report->save(false);
 
-            $pdf2 = new Pdf([
-                'mode' => Pdf::MODE_UTF8,
-                'content' => $content2,
-                'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
-                'cssInline' => '.kv-heading-1{font-size:18px}',
-                'orientation' => 'L'
-            ]);
+            $imgPath = Yii::getAlias('@webroot/certificates/certificate.jpeg');
+            $image = imagecreatefromjpeg($imgPath);
+            $textColor = imagecolorallocate($image, 0, 0, 0);
+            $fontPath = '/app/frontend/fonts/times.ttf';
+            imagettftext($image, 24, 0, 525, 585, $textColor, $fontPath, $teacher->name);
+            $newPath = Yii::getAlias('@webroot/certificates/')
+                . Yii::$app->security->generateRandomString(8)
+                . '.jpeg';
+            imagejpeg($image, $newPath);
+            imagedestroy($image);
 
-            $pdfOutput2 = $pdf2->render();
-            $pdfFilePath2 = Yii::getAlias('@webroot/certificates/')
-                . $teacher->id
-                . $test->id
-                . '.pdf';
-            file_put_contents($pdfFilePath2, $pdfOutput2);
+            $certificate = new File();
+            $certificate->teacher_id = $teacher->id;
+            $certificate->test_id = $test->id;
+            $certificate->path = $newPath;
+            $certificate->save(false);
 
-            return $this->redirect(['end', 'id' => $test->id]);
+            return $this->redirect(['detail-view', 'id' => $test->id]);
         }
         throw new NotFoundHttpException('The requested page does not exist.');
     }
 
-    public function actionEnd($id){
-        $test = Test::findOne($id);
-        $teacher = Teacher::findOne(['user_id' => Yii::$app->user->id]);
-
-        $pdfUrl = Yii::$app->request->baseUrl
-            . '/reports/'
-            . $teacher->id
-            . $test->id
-            . '.pdf';
-
-        $imgSrc = Yii::$app->request->baseUrl . '/certificates/certificate.jpg';
-
-        return $this->render('end', [
-            'test' => Test::findOne($id),
-            'pdfUrl' => $pdfUrl,
-            'imgSrc' => $imgSrc
-        ]);
-    }
-
-    public function actionCertificate()
+    public function actionDownload($id)
     {
-        $filePath = Yii::getAlias('@webroot/certificates/certificate.jpg');
-        return Yii::$app->response->sendFile($filePath, 'certificate.jpg');
+        $file = File::findOne($id);
+        if (preg_match('/\.pdf$/i', $file->path)) {
+            $text = 'Қатемен жұмыс.pdf';
+        } elseif (preg_match('/\.(jpeg|jpg)$/i', $file->path)) {
+            $text = 'Сертификат.jpeg';
+        } else {
+            $text = $file->path;
+        }
+        return Yii::$app->response->sendFile($file->path, $text);
     }
 
     public function actionLogin()

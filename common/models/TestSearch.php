@@ -18,7 +18,7 @@ class TestSearch extends Test
     {
         return [
             [['id', 'subject_id', 'has_equation'], 'integer'],
-            [['title', 'test', 'status'], 'safe'],
+            [['title', 'test', 'status', 'start_time', 'end_time'], 'safe'],
         ];
     }
 
@@ -61,6 +61,8 @@ class TestSearch extends Test
             'id' => $this->id,
             'subject_id' => $this->subject_id,
             'has_equation' => $this->has_equation,
+            'start_time' => $this->start_time,
+            'end_time' => $this->end_time,
         ]);
 
         $query->andFilterWhere(['like', 'title', $this->title])

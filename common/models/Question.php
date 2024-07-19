@@ -35,8 +35,6 @@ class Question extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['answer1', 'answer2', 'answer3', 'answer4', 'answer5'], 'required'],
-
             [['test_id', 'number'], 'integer'],
             [['question'], 'string', 'max' => 1000],
             [['answer1', 'answer2', 'answer3', 'answer4', 'correct_answer'], 'string', 'max' => 255],

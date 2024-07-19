@@ -41,10 +41,10 @@ Select2Asset::register($this);
     $menuItems = [];
 
     if(Admin::findOne(Yii::$app->user->id)){
-        $menuItems[] = ['label' => 'Пользователи', 'url' => ['/teacher/index']];
-        $menuItems[] = ['label' => 'Школы', 'url' => ['/school/index']];
-        $menuItems[] = ['label' => 'Предметы', 'url' => ['/subject/index']];
-        $menuItems[] = ['label' => 'Тесты', 'url' => ['/test/index']];
+        $menuItems[] = ['label' => 'Мұғалімдер', 'url' => ['/teacher/index']];
+        $menuItems[] = ['label' => 'Мектептер', 'url' => ['/school/index']];
+        $menuItems[] = ['label' => 'Пәндер', 'url' => ['/subject/index']];
+        $menuItems[] = ['label' => 'Тесттер', 'url' => ['/test/index']];
     }
 
     echo Nav::widget([
@@ -52,12 +52,12 @@ Select2Asset::register($this);
         'items' => $menuItems,
     ]);
     if (Yii::$app->user->isGuest) {
-        echo Html::tag('div',Html::a('Signup',['/site/signup'],['class' => ['btn btn-link login text-decoration-none']]),['class' => ['d-flex']]);
-        echo Html::tag('div',Html::a('Login',['/site/login'],['class' => ['btn btn-link login text-decoration-none']]),['class' => ['d-flex']]);
+        echo Html::tag('div',Html::a('Тіркелу',['/site/signup'],['class' => ['btn btn-link login text-decoration-none']]),['class' => ['d-flex']]);
+        echo Html::tag('div',Html::a('Кіру',['/site/login'],['class' => ['btn btn-link login text-decoration-none']]),['class' => ['d-flex']]);
     } else {
         echo Html::beginForm(['/site/logout'], 'post', ['class' => 'd-flex'])
             . Html::submitButton(
-                'Logout (' . Yii::$app->user->identity->username . ')',
+                'Шығу (' . Yii::$app->user->identity->username . ')',
                 ['class' => 'btn btn-link logout text-decoration-none']
             )
             . Html::endForm();

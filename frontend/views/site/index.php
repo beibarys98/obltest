@@ -15,12 +15,25 @@ $this->title = 'Obl Test';
         'columns' => [
             [
                 'attribute' => 'title',
-                'label' => 'Заголовок',
+                'label' => 'Атауы',
                 'format' => 'raw',
                 'value' => function ($model) {
-                    return Html::a($model->title, ['view', 'id' => $model->id]);
+                    return Html::a($model->title, ['detail-view', 'id' => $model->id]);
                 },
             ],
+            [
+                'attribute' => 'subject_id',
+                'label' => 'Пән',
+                'value' => 'subject.subject'
+            ],
+            [
+                'attribute' => 'start_time',
+                'label' => 'Басталуы'
+            ],
+            [
+                'attribute' => 'end_time',
+                'label' => 'Аяқталуы'
+            ]
         ],
     ]); ?>
 </div>

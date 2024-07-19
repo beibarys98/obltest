@@ -13,6 +13,8 @@ use Yii;
  * @property string|null $test
  * @property int|null $has_equation
  * @property string|null $status
+ * @property string|null $start_time
+ * @property string|null $end_time
  *
  * @property Question[] $questions
  * @property Subject $subject
@@ -33,9 +35,8 @@ class Test extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['subject_id', 'title', 'test'], 'required'],
-
             [['subject_id', 'has_equation'], 'integer'],
+            [['start_time', 'end_time'], 'safe'],
             [['title', 'status'], 'string', 'max' => 255],
             [['test'], 'string', 'max' => 10000],
             [['subject_id'], 'exist', 'skipOnError' => true, 'targetClass' => Subject::class, 'targetAttribute' => ['subject_id' => 'id']],
@@ -54,6 +55,8 @@ class Test extends \yii\db\ActiveRecord
             'test' => Yii::t('app', 'Test'),
             'has_equation' => Yii::t('app', 'Has Equation'),
             'status' => Yii::t('app', 'Status'),
+            'start_time' => Yii::t('app', 'Start Time'),
+            'end_time' => Yii::t('app', 'End Time'),
         ];
     }
 

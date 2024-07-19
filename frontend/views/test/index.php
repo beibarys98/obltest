@@ -12,14 +12,14 @@ use yii\widgets\Pjax;
 /** @var yii\data\ActiveDataProvider $dataProvider2 */
 /** @var yii\data\ActiveDataProvider $dataProvider3 */
 
-$this->title = Yii::t('app', 'Тесты');
+$this->title = Yii::t('app', 'Тесттер');
 ?>
 <div class="test-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a(Yii::t('app', 'Добавить тест'), ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a(Yii::t('app', 'Жаңа тест'), ['create'], ['class' => 'btn btn-success']) ?>
     </p>
 
     <?php Pjax::begin(); ?>
@@ -29,7 +29,7 @@ $this->title = Yii::t('app', 'Тесты');
     <div class="row">
         <div class="col-4">
 
-            <h4>Загрузите формулы</h4>
+            <h4>Формулаларды қосыңыз</h4>
 
             <?= GridView::widget([
                 'dataProvider' => $dataProvider,
@@ -40,11 +40,11 @@ $this->title = Yii::t('app', 'Тесты');
                     [
                         'attribute' => 'subject_id',
                         'value' => 'subject.subject',
-                        'label' => 'Предмет'
+                        'label' => 'Пән'
                     ],
                     [
                         'attribute' => 'title',
-                        'label' => 'Заголовок',
+                        'label' => 'Атауы',
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::a($model->title, ['view', 'id' => $model->id]);
@@ -55,7 +55,7 @@ $this->title = Yii::t('app', 'Тесты');
         </div>
         <div class="col-4">
 
-            <h4>Готовые к публикаций</h4>
+            <h4>Дайын тесттер</h4>
 
             <?= GridView::widget([
                 'dataProvider' => $dataProvider2,
@@ -66,11 +66,11 @@ $this->title = Yii::t('app', 'Тесты');
                     [
                         'attribute' => 'subject_id',
                         'value' => 'subject.subject',
-                        'label' => 'Предмет'
+                        'label' => 'Пән'
                     ],
                     [
                         'attribute' => 'title',
-                        'label' => 'Заголовок',
+                        'label' => 'Атауы',
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::a($model->title, ['view', 'id' => $model->id]);
@@ -81,7 +81,7 @@ $this->title = Yii::t('app', 'Тесты');
         </div>
         <div class="col-4">
 
-            <h4>Опубликованные</h4>
+            <h4>Жарияланған тесттер</h4>
 
             <?= GridView::widget([
                 'dataProvider' => $dataProvider3,
@@ -92,11 +92,11 @@ $this->title = Yii::t('app', 'Тесты');
                     [
                         'attribute' => 'subject_id',
                         'value' => 'subject.subject',
-                        'label' => 'Предмет'
+                        'label' => 'Пән'
                     ],
                     [
                         'attribute' => 'title',
-                        'label' => 'Заголовок',
+                        'label' => 'Атауы',
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::a($model->title, ['view', 'id' => $model->id]);
