@@ -6,8 +6,11 @@ use common\models\File;
 use common\models\Formula;
 use common\models\Question;
 use common\models\Result;
+use common\models\ResultPdf;
+use common\models\Teacher;
 use common\models\Test;
 use common\models\TestSearch;
+use DateTime;
 use kartik\mpdf\Pdf;
 use Yii;
 use yii\data\ActiveDataProvider;
@@ -64,6 +67,12 @@ class TestController extends Controller
 
     public function actionView($id)
     {
+        $test = Test::findOne($id);
+        if (new DateTime() >= new DateTime($test->end_time)) {
+            $test->status = 'finished';
+            $test->save(false);
+        }
+
         $questions = Question::find()->andWhere(['test_id' => $id])->all();
 
         return $this->render('view', [
@@ -75,7 +84,6 @@ class TestController extends Controller
     public function actionCreate()
     {
         $model = new Test();
-        $questions = [];
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post())) {
@@ -137,11 +145,6 @@ class TestController extends Controller
         $test->status = 'finished';
         $test->save(false);
 
-        return $this->redirect(['view', 'id' => $id]);
-    }
-
-    public function actionResult($id)
-    {
         $results = new ActiveDataProvider([
             'query' => Result::find()
                 ->andWhere(['test_id' => $id])
@@ -161,7 +164,82 @@ class TestController extends Controller
             'filename' => 'Нәтиже.pdf',
         ]);
 
-        return $pdf->render();
+        //save results pdf in db
+        $pdfOutput = $pdf->render();
+        $pdfFilePath = Yii::getAlias('@webroot/results/')
+            . Yii::$app->security->generateRandomString(8)
+            . '.pdf';
+        file_put_contents($pdfFilePath, $pdfOutput);
+
+        $result_pdf = new ResultPdf();
+        $result_pdf->test_id = $id;
+        $result_pdf->path = $pdfFilePath;
+        $result_pdf->save(false);
+
+        //send certificates
+        $topResults = Result::find()
+            ->andWhere(['test_id' => $id])
+            ->orderBy(['result' => SORT_DESC])
+            ->all();
+        $firstPlace = $topResults[0] ?? null;
+        $secondPlace = $topResults[1] ?? null;
+        $thirdPlace = $topResults[2] ?? null;
+
+        if ($firstPlace) {
+            $this->certificate(Teacher::findOne($firstPlace->teacher_id), Test::findOne($id), 1);
+        }
+        if ($secondPlace) {
+            $this->certificate(Teacher::findOne($secondPlace->teacher_id), Test::findOne($id), 2);
+        }
+        if ($thirdPlace) {
+            $this->certificate(Teacher::findOne($thirdPlace->teacher_id), Test::findOne($id), 3);
+        }
+
+        $remainingResults = array_slice($topResults, 3);
+        foreach ($remainingResults as $result) {
+            $this->certificate(Teacher::findOne($result->teacher_id), Test::findOne($id), 4);
+        }
+
+        return $this->redirect(['view', 'id' => $id]);
+    }
+
+    public function actionResult($id)
+    {
+        $file = ResultPdf::findOne(['test_id' => $id]);
+        return Yii::$app->response->sendFile($file->path, 'Нәтиже.pdf');
+    }
+
+    public function certificate($teacher, $test, $place)
+    {
+        $imgPath = Yii::getAlias("@webroot/certificates/certificate{$place}.jpeg");
+        $image = imagecreatefromjpeg($imgPath);
+        $textColor = imagecolorallocate($image, 0, 0, 0);
+        $textColor2 = imagecolorallocate($image, 43, 56, 98);
+        $fontPath = '/app/frontend/fonts/times.ttf';
+        imagettftext($image, 24, 0, 525, 585, $textColor, $fontPath, $teacher->name);
+        imagettftext($image, 24, 0, 450, 450, $textColor2, $fontPath, $teacher->subject->subject);
+        $month = date('n');
+        $year = date('Y');
+        $months = [
+            1 => 'қаңтар', 2 => 'ақпан', 3 => 'наурыз',
+            4 => 'сәуір', 5 => 'мамыр', 6 => 'маусым',
+            7 => 'шілде', 8 => 'тамыз', 9 => 'қыркүйек',
+            10 => 'қазан', 11 => 'қараша', 12 => 'желтоқсан',
+        ];
+        $monthName = $months[$month];
+        $dateText = $monthName . ' ' . $year . ' жыл';
+        imagettftext($image, 16, 0, 650, 830, $textColor2, $fontPath, $dateText);
+        $newPath = Yii::getAlias('@webroot/certificates/')
+            . Yii::$app->security->generateRandomString(8)
+            . '.jpeg';
+        imagejpeg($image, $newPath);
+        imagedestroy($image);
+
+        $certificate = new File();
+        $certificate->teacher_id = $teacher->id;
+        $certificate->test_id = $test->id;
+        $certificate->path = $newPath;
+        $certificate->save(false);
     }
 
     public function actionFormula($id){

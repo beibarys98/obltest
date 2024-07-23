@@ -37,7 +37,7 @@ $this->title = 'Obl Test';
                 'attribute' => 'end_time',
                 'label' => 'Аяқталуы',
                 'value' => function ($model) {
-                    return date('d/m H:i', strtotime($model->start_time)); // Short month name
+                    return date('d/m H:i', strtotime($model->end_time)); // Short month name
                 },
             ],
         ],

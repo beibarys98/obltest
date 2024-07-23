@@ -104,7 +104,7 @@ class SiteController extends Controller
         $test = new ActiveDataProvider([
             'query' => Test::find()
                 ->andWhere(['subject_id' => $teacher->subject_id])
-                ->andWhere(['status' => 'public']),
+                ->andWhere(['status' => ['public', 'finished']]),
         ]);
 
         return $this->render('index', [
@@ -242,24 +242,6 @@ class SiteController extends Controller
             $report->path = $pdfFilePath;
             $report->save(false);
 
-            //save certificate in db
-//            $imgPath = Yii::getAlias('@webroot/certificates/certificate.jpeg');
-//            $image = imagecreatefromjpeg($imgPath);
-//            $textColor = imagecolorallocate($image, 0, 0, 0);
-//            $fontPath = '/app/frontend/fonts/times.ttf';
-//            imagettftext($image, 24, 0, 525, 585, $textColor, $fontPath, $teacher->name);
-//            $newPath = Yii::getAlias('@webroot/certificates/')
-//                . Yii::$app->security->generateRandomString(8)
-//                . '.jpeg';
-//            imagejpeg($image, $newPath);
-//            imagedestroy($image);
-//
-//            $certificate = new File();
-//            $certificate->teacher_id = $teacher->id;
-//            $certificate->test_id = $test->id;
-//            $certificate->path = $newPath;
-//            $certificate->save(false);
-
             return $this->redirect(['detail-view', 'id' => $test->id]);
         }
         throw new NotFoundHttpException('The requested page does not exist.');
@@ -354,6 +336,7 @@ class SiteController extends Controller
             && $model2->load(Yii::$app->request->post())
             && $model->signup($model2)) {
 
+            Yii::$app->session->setFlash('success', 'Сіз тіркелдіңіз!');
             return $this->goHome();
         }
 

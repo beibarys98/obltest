@@ -17,14 +17,39 @@ use yii\widgets\DetailView;
 $this->title = $test->title;
 \yii\web\YiiAsset::register($this);
 
-$timezone = new \DateTimeZone('Asia/Karachi'); // Adjust this if needed for GMT+5
+$startTime = time();
+$endTime = strtotime($test->end_time);
+$durationInSeconds = $endTime - $startTime;
+$durationInSeconds = max($durationInSeconds, 0);
 
-$now = new \DateTime('now', $timezone);
-$startTime = new \DateTime($test->start_time, $timezone);
-$endTime = new \DateTime($test->end_time, $timezone);
+$this->registerJs("
+    function startTimer(duration, display) {
+        var timer = duration, hours, minutes, seconds;
+        var interval = setInterval(function () {
+            hours = parseInt(timer / 3600, 10); // Calculate hours
+            minutes = parseInt((timer % 3600) / 60, 10); // Calculate minutes
+            seconds = parseInt(timer % 60, 10); // Calculate seconds
 
-// Check if the current time is within the start and end times
-$isActive = $now >= $startTime && $now<= $endTime;
+            hours = hours < 10 ? '0' + hours : hours;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+
+            display.textContent = hours + ':' + minutes + ':' + seconds;
+
+            if (--timer < 0) {
+                timer = 0; // Stop at 0
+                clearInterval(interval); // Stop the timer
+                document.getElementById('myForm').submit(); // Submit the form
+            }
+        }, 1000);
+    }
+
+    window.onload = function () {
+        var duration = $durationInSeconds; // Countdown duration in seconds
+        var display = document.querySelector('#clock'); // Timer display element
+        startTimer(duration, display);
+    };
+", View::POS_END);
 ?>
 
 <div class="test-view">
@@ -119,31 +144,20 @@ $isActive = $now >= $startTime && $now<= $endTime;
 
     <?php ActiveForm::end(); ?>
 
+
+
     <div class="shadow" style="position: fixed;
         bottom: 10%; right: 9%; z-index: 1000;
-        width: 200px; height: 100px; border: 1px solid black;
+        width: 150px; height: 90px; border: 1px solid black;
         border-radius: 10px; text-align: center;">
-        <div>
-            Аяқталуы: <?= date('H:i', strtotime($test->end_time))?>
+        <div class="site-index">
+            <div style="color: red;">
+                Парақшаны жаңартпаңыз!
+            </div>
+            <div class="jumbotron">
+                <p id="clock" style="font-size: 24px;"></p>
+            </div>
         </div>
-        <div class="mt-1">
-            Аяқталуына қалды
-        </div>
-        <?php
-        $startTime = new DateTime();
-        $endTime = new DateTime($test->end_time);
-        $interval = $startTime->diff($endTime);
-        $hours = str_pad($interval->h, 2, '0', STR_PAD_LEFT);
-        $minutes = str_pad($interval->i, 2, '0', STR_PAD_LEFT);
-        $seconds = str_pad($interval->s, 2, '0', STR_PAD_LEFT);
-        $formattedTime = "$hours:$minutes:$seconds";
-        ?>
-        <?php \yii\widgets\Pjax::begin()?>
-        <?= $this->render('_time_display', [
-            'test' => $test,
-            'time' => $formattedTime
-        ])?>
-        <?php \yii\widgets\Pjax::end()?>
     </div>
 
 </div>

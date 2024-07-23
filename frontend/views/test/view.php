@@ -67,7 +67,7 @@ $this->title = $test->title;
                     : ($test->status == 'finished'
                         ? Html::a(Yii::t('app', 'Нәтиже') ,
                             ['result', 'id' => $test->id],
-                            ['class' => 'btn btn-secondary', 'target' => '_blank'])
+                            ['class' => 'btn btn-secondary'])
                         : null) ?>
             <?php endif;?>
         </div>

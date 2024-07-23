@@ -12,8 +12,14 @@ use yii\grid\GridView;
         'dataProvider' => $results,
         'layout' => "{items}",
         'columns' => [
-            'teacher.name',
-            'result'
+            [
+                'attribute' => 'teacher.name',
+                'label' => 'Есімі',
+            ],
+            [
+                'attribute' => 'result',
+                'label' => 'Натижесі',
+            ],
         ],
     ]); ?>
 </div>

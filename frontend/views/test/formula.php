@@ -46,8 +46,7 @@ $this->title = $test->title;
                         <?= Html::a('x', ['delete-formula', 'id' => $f->id, 'test_id' => $test->id],
                             ['class' => 'btn btn-danger',
                                 'style' => [
-                                    'height' => '40px',
-                                    'margin-top' => '100px'
+                                    'height' => '40px'
                                 ]])?>
                     <?php else:?>
                         <?= Html::a('+', ['add-formula', 'id' => $q->id, 't' => 'answer1'], ['class' => 'btn btn-primary m-1'])?>
@@ -66,8 +65,7 @@ $this->title = $test->title;
                         <?= Html::a('x', ['delete-formula', 'id' => $f->id, 'test_id' => $test->id],
                             ['class' => 'btn btn-danger',
                                 'style' => [
-                                    'height' => '40px',
-                                    'margin-top' => '100px'
+                                    'height' => '40px'
                                 ]])?>
                     <?php else:?>
                         <?= Html::a('+', ['add-formula', 'id' => $q->id, 't' => 'answer2'], ['class' => 'btn btn-primary m-1'])?>
@@ -86,8 +84,7 @@ $this->title = $test->title;
                         <?= Html::a('x', ['delete-formula', 'id' => $f->id, 'test_id' => $test->id],
                             ['class' => 'btn btn-danger',
                                 'style' => [
-                                    'height' => '40px',
-                                    'margin-top' => '100px'
+                                    'height' => '40px'
                                 ]])?>
                     <?php else:?>
                         <?= Html::a('+', ['add-formula', 'id' => $q->id, 't' => 'answer3'], ['class' => 'btn btn-primary m-1'])?>
@@ -106,8 +103,7 @@ $this->title = $test->title;
                         <?= Html::a('x', ['delete-formula', 'id' => $f->id, 'test_id' => $test->id],
                             ['class' => 'btn btn-danger',
                                 'style' => [
-                                        'height' => '40px',
-                                        'margin-top' => '100px'
+                                        'height' => '40px'
                                 ]])?>
                     <?php else:?>
                         <?= Html::a('+', ['add-formula', 'id' => $q->id, 't' => 'answer4'], ['class' => 'btn btn-primary m-1'])?>

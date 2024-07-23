@@ -29,10 +29,12 @@ $this->title = $test->title;
             <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'question'])):?>
                 <br>
                 <img src="<?= $f->path ?>"
-                     class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
+                     style="max-height: 200px; border: 1px solid black; margin: 10px 10px 10px 10px;">
             <?php endif;?>
             <div class="d-flex ms-5">
-                <?= 'a. '?>
+                <span style="<?= $q->correct_answer == 'a' ? 'color: green;' : ($answers[$q->id] == 'a' ? 'color: red;' : '') ?>">
+                    <?= 'a. '?>
+                </span>
                 <?php if($q->answer1):?>
                     <span style="<?= $q->correct_answer == 'a' ? 'color: green;' : ($answers[$q->id] == 'a' ? 'color: red;' : '') ?>">
                         <?= $q->answer1;?>
@@ -40,14 +42,15 @@ $this->title = $test->title;
                     </span>
                 <?php else:?>
                     <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'answer1'])):?>
-                        <br>
-                        <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
-                             class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
+                        <img src="<?= $f->path ?>"
+                             style="max-height: 200px; border: 1px solid black; margin: 10px 10px 10px 10px;">
                     <?php endif;?>
                 <?php endif;?>
             </div>
             <div class="d-flex ms-5">
-                <?= 'b. '?>
+                <span style="<?= $q->correct_answer == 'b' ? 'color: green;' : ($answers[$q->id] == 'b' ? 'color: red;' : '') ?>">
+                    <?= 'b. '?>
+                </span>
                 <?php if($q->answer2):?>
                     <span style="<?= $q->correct_answer == 'b' ? 'color: green;' : ($answers[$q->id] == 'b' ? 'color: red;' : '') ?>">
                         <?= $q->answer2;?>
@@ -55,14 +58,15 @@ $this->title = $test->title;
                     </span>
                 <?php else:?>
                     <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'answer2'])):?>
-                        <br>
-                        <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
-                             class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
+                        <img src="<?= $f->path ?>"
+                             style="max-height: 200px; border: 1px solid black; margin: 10px 10px 10px 10px;">
                     <?php endif;?>
                 <?php endif;?>
             </div>
             <div class="d-flex ms-5">
-                <?= 'c. '?>
+                <span style="<?= $q->correct_answer == 'c' ? 'color: green;' : ($answers[$q->id] == 'c' ? 'color: red;' : '') ?>">
+                    <?= 'c. '?>
+                </span>
                 <?php if($q->answer3):?>
                     <span style="<?= $q->correct_answer == 'c' ? 'color: green;' : ($answers[$q->id] == 'c' ? 'color: red;' : '') ?>">
                         <?= $q->answer3;?>
@@ -70,14 +74,15 @@ $this->title = $test->title;
                     </span>
                 <?php else:?>
                     <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'answer3'])):?>
-                        <br>
-                        <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
-                             class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
+                        <img src="<?= $f->path ?>"
+                             style="max-height: 200px; border: 1px solid black; margin: 10px 10px 10px 10px;">
                     <?php endif;?>
                 <?php endif;?>
             </div>
             <div class="d-flex ms-5">
-                <?= 'd. '?>
+                <span style="<?= $q->correct_answer == 'd' ? 'color: green;' : ($answers[$q->id] == 'd' ? 'color: red;' : '') ?>">
+                    <?= 'd. '?>
+                </span>
                 <?php if($q->answer4):?>
                     <span style="<?= $q->correct_answer == 'd' ? 'color: green;' : ($answers[$q->id] == 'd' ? 'color: red;' : '') ?>">
                         <?= $q->answer4;?>
@@ -85,9 +90,8 @@ $this->title = $test->title;
                     </span>
                 <?php else:?>
                     <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'answer4'])):?>
-                        <br>
-                        <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
-                             class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
+                        <img src="<?= $f->path ?>"
+                             style="max-height: 200px; border: 1px solid black; margin: 10px 10px 10px 10px;">
                     <?php endif;?>
                 <?php endif;?>
             </div>
