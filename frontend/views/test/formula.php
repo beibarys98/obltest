@@ -121,7 +121,7 @@ $this->title = $test->title;
     <?php endforeach; ?>
 
     <div class="">
-        <?= Html::a(Yii::t('app', 'Сохранить'),
+        <?= Html::a(Yii::t('app', 'Сақтау'),
             ['test/view', 'id' => $test->id],
             [
                 'class' => 'btn btn-success rounded-circle shadow',

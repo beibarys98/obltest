@@ -4,6 +4,8 @@ namespace frontend\controllers;
 
 use common\models\Certificate;
 use common\models\File;
+use common\models\Result;
+use DateTime;
 use Imagine\Gd\Imagine;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
@@ -60,6 +62,7 @@ class SiteController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'logout' => ['post'],
+                    'refresh-time' => ['post'],
                 ],
             ],
         ];
@@ -101,7 +104,7 @@ class SiteController extends Controller
         $test = new ActiveDataProvider([
             'query' => Test::find()
                 ->andWhere(['subject_id' => $teacher->subject_id])
-                ->andWhere(['status' => 'опубликован']),
+                ->andWhere(['status' => 'public']),
         ]);
 
         return $this->render('index', [
@@ -135,10 +138,17 @@ class SiteController extends Controller
     {
         $teacher = Teacher::findOne(['user_id' => Yii::$app->user->id]);
         $test = Test::findOne($id);
-        $file = new ActiveDataProvider([
+        $report = new ActiveDataProvider([
             'query' => File::find()
                 ->andWhere(['teacher_id' => $teacher->id])
                 ->andWhere(['test_id' => $id])
+                ->andWhere(['LIKE', 'path', '%\.pdf', false])
+        ]);
+        $certificate = new ActiveDataProvider([
+            'query' => File::find()
+                ->andWhere(['teacher_id' => $teacher->id])
+                ->andWhere(['test_id' => $id])
+                ->andWhere(['LIKE', 'path', '%\.jpeg', false])
         ]);
 
         $timezone = new \DateTimeZone('Asia/Karachi'); // Adjust this if needed for GMT+5
@@ -155,8 +165,26 @@ class SiteController extends Controller
 
         return $this->render('detail-view', [
             'test' => Test::findOne($id),
-            'file' => $file,
+            'report' => $report,
+            'certificate' => $certificate,
             'isActive' => $isActive,
+        ]);
+    }
+
+    public function actionRefreshTime($id)
+    {
+        $test = Test::findOne($id);
+        $startTime = new DateTime();
+        $endTime = new DateTime($test->end_time);
+        $interval = $startTime->diff($endTime);
+        $hours = str_pad($interval->h, 2, '0', STR_PAD_LEFT);
+        $minutes = str_pad($interval->i, 2, '0', STR_PAD_LEFT);
+        $seconds = str_pad($interval->s, 2, '0', STR_PAD_LEFT);
+        $formattedTime = "$hours:$minutes:$seconds";
+
+        return $this->renderAjax('_time_display', [
+            'test' => $test,
+            'time' => $formattedTime,
         ]);
     }
 
@@ -174,7 +202,21 @@ class SiteController extends Controller
                 }
             }
 
-            $content = $this->renderPartial('result', [
+            //save results in db
+            $score = 0;
+            foreach($questions as $q){
+                if ($postData[$q->id] == $q->correct_answer) {
+                    $score++;
+                }
+            }
+            $result = new Result();
+            $result->teacher_id = $teacher->id;
+            $result->test_id = $test->id;
+            $result->result = $score;
+            $result->save(false);
+
+            //save results in pdf
+            $content = $this->renderPartial('report', [
                 'test' => $test,
                 'questions' => $questions,
                 'answers' => $postData
@@ -187,6 +229,7 @@ class SiteController extends Controller
                 'cssInline' => '.kv-heading-1{font-size:18px}'
             ]);
 
+            //save pdf in db
             $pdfOutput = $pdf->render();
             $pdfFilePath = Yii::getAlias('@webroot/reports/')
                 . Yii::$app->security->generateRandomString(8)
@@ -199,22 +242,23 @@ class SiteController extends Controller
             $report->path = $pdfFilePath;
             $report->save(false);
 
-            $imgPath = Yii::getAlias('@webroot/certificates/certificate.jpeg');
-            $image = imagecreatefromjpeg($imgPath);
-            $textColor = imagecolorallocate($image, 0, 0, 0);
-            $fontPath = '/app/frontend/fonts/times.ttf';
-            imagettftext($image, 24, 0, 525, 585, $textColor, $fontPath, $teacher->name);
-            $newPath = Yii::getAlias('@webroot/certificates/')
-                . Yii::$app->security->generateRandomString(8)
-                . '.jpeg';
-            imagejpeg($image, $newPath);
-            imagedestroy($image);
-
-            $certificate = new File();
-            $certificate->teacher_id = $teacher->id;
-            $certificate->test_id = $test->id;
-            $certificate->path = $newPath;
-            $certificate->save(false);
+            //save certificate in db
+//            $imgPath = Yii::getAlias('@webroot/certificates/certificate.jpeg');
+//            $image = imagecreatefromjpeg($imgPath);
+//            $textColor = imagecolorallocate($image, 0, 0, 0);
+//            $fontPath = '/app/frontend/fonts/times.ttf';
+//            imagettftext($image, 24, 0, 525, 585, $textColor, $fontPath, $teacher->name);
+//            $newPath = Yii::getAlias('@webroot/certificates/')
+//                . Yii::$app->security->generateRandomString(8)
+//                . '.jpeg';
+//            imagejpeg($image, $newPath);
+//            imagedestroy($image);
+//
+//            $certificate = new File();
+//            $certificate->teacher_id = $teacher->id;
+//            $certificate->test_id = $test->id;
+//            $certificate->path = $newPath;
+//            $certificate->save(false);
 
             return $this->redirect(['detail-view', 'id' => $test->id]);
         }

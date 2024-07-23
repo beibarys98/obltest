@@ -39,7 +39,7 @@ use yii\widgets\DetailView;
                 <?= $form->field($formula, 'file')->fileInput(['class' => 'ms-3'])->label(false) ?>
 
                 <div class="form-group">
-                    <?= Html::submitButton('Сохранить', ['class' => 'btn btn-primary']) ?>
+                    <?= Html::submitButton('Сақтау', ['class' => 'btn btn-primary']) ?>
                 </div>
 
                 <?php ActiveForm::end(); ?>

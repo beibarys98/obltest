@@ -104,6 +104,6 @@ $this->title = $test->title;
 
     <!-- print score -->
     <div style="font-weight: bold;">
-        <h3>Результат: <?= $score ?> / <?= $totalQuestions ?></h3>
+        <h3>Нәтиже: <?= $score ?> / <?= $totalQuestions ?></h3>
     </div>
 </div>

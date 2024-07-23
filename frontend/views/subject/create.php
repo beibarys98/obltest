@@ -5,7 +5,7 @@ use yii\helpers\Html;
 /** @var yii\web\View $this */
 /** @var common\models\Subject $model */
 
-$this->title = Yii::t('app', 'Добавить предмет');
+$this->title = Yii::t('app', 'Жаңа пән');
 ?>
 <div class="subject-create">
 

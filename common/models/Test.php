@@ -11,7 +11,6 @@ use Yii;
  * @property int|null $subject_id
  * @property string|null $title
  * @property string|null $test
- * @property int|null $has_equation
  * @property string|null $status
  * @property string|null $start_time
  * @property string|null $end_time
@@ -35,7 +34,7 @@ class Test extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['subject_id', 'has_equation'], 'integer'],
+            [['subject_id'], 'integer'],
             [['start_time', 'end_time'], 'safe'],
             [['title', 'status'], 'string', 'max' => 255],
             [['test'], 'string', 'max' => 10000],

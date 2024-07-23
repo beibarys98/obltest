@@ -11,6 +11,7 @@ use yii\widgets\Pjax;
 /** @var yii\data\ActiveDataProvider $dataProvider */
 /** @var yii\data\ActiveDataProvider $dataProvider2 */
 /** @var yii\data\ActiveDataProvider $dataProvider3 */
+/** @var yii\data\ActiveDataProvider $dataProvider4 */
 
 $this->title = Yii::t('app', 'Тесттер');
 ?>
@@ -29,19 +30,12 @@ $this->title = Yii::t('app', 'Тесттер');
     <div class="row">
         <div class="col-4">
 
-            <h4>Формулаларды қосыңыз</h4>
+            <h4>Жаңа тесттер</h4>
 
             <?= GridView::widget([
                 'dataProvider' => $dataProvider,
                 'layout' => "{items}",
                 'columns' => [
-
-                    'id',
-                    [
-                        'attribute' => 'subject_id',
-                        'value' => 'subject.subject',
-                        'label' => 'Пән'
-                    ],
                     [
                         'attribute' => 'title',
                         'label' => 'Атауы',
@@ -50,30 +44,61 @@ $this->title = Yii::t('app', 'Тесттер');
                             return Html::a($model->title, ['view', 'id' => $model->id]);
                         },
                     ],
-                ],
-            ]); ?>
-        </div>
-        <div class="col-4">
-
-            <h4>Дайын тесттер</h4>
-
-            <?= GridView::widget([
-                'dataProvider' => $dataProvider2,
-                'layout' => "{items}",
-                'columns' => [
-
-                    'id',
                     [
                         'attribute' => 'subject_id',
                         'value' => 'subject.subject',
                         'label' => 'Пән'
                     ],
                     [
+                        'attribute' => 'start_time',
+                        'label' => 'Басталуы',
+                        'value' => function ($model) {
+                            return date('d/m H:i', strtotime($model->start_time)); // Short month name
+                        },
+                    ],
+                    [
+                        'attribute' => 'end_time',
+                        'label' => 'Аяқталуы',
+                        'value' => function ($model) {
+                            return date('d/m H:i', strtotime($model->start_time)); // Short month name
+                        },
+                    ],
+                ],
+            ]); ?>
+        </div>
+        <div class="col-4">
+
+            <h4>Өңделген тесттер</h4>
+
+            <?= GridView::widget([
+                'dataProvider' => $dataProvider2,
+                'layout' => "{items}",
+                'columns' => [
+                    [
                         'attribute' => 'title',
                         'label' => 'Атауы',
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::a($model->title, ['view', 'id' => $model->id]);
+                        },
+                    ],
+                    [
+                        'attribute' => 'subject_id',
+                        'value' => 'subject.subject',
+                        'label' => 'Пән'
+                    ],
+                    [
+                        'attribute' => 'start_time',
+                        'label' => 'Басталуы',
+                        'value' => function ($model) {
+                            return date('d/m H:i', strtotime($model->start_time)); // Short month name
+                        },
+                    ],
+                    [
+                        'attribute' => 'end_time',
+                        'label' => 'Аяқталуы',
+                        'value' => function ($model) {
+                            return date('d/m H:i', strtotime($model->start_time)); // Short month name
                         },
                     ],
                 ],
@@ -87,13 +112,6 @@ $this->title = Yii::t('app', 'Тесттер');
                 'dataProvider' => $dataProvider3,
                 'layout' => "{items}",
                 'columns' => [
-
-                    'id',
-                    [
-                        'attribute' => 'subject_id',
-                        'value' => 'subject.subject',
-                        'label' => 'Пән'
-                    ],
                     [
                         'attribute' => 'title',
                         'label' => 'Атауы',
@@ -102,9 +120,67 @@ $this->title = Yii::t('app', 'Тесттер');
                             return Html::a($model->title, ['view', 'id' => $model->id]);
                         },
                     ],
+                    [
+                        'attribute' => 'subject_id',
+                        'value' => 'subject.subject',
+                        'label' => 'Пән'
+                    ],
+                    [
+                        'attribute' => 'start_time',
+                        'label' => 'Басталуы',
+                        'value' => function ($model) {
+                            return date('d/m H:i', strtotime($model->start_time)); // Short month name
+                        },
+                    ],
+                    [
+                        'attribute' => 'end_time',
+                        'label' => 'Аяқталуы',
+                        'value' => function ($model) {
+                            return date('d/m H:i', strtotime($model->end_time)); // Short month name
+                        },
+                    ],
                 ],
             ]); ?>
         </div>
+    </div>
+
+    <div class="row">
+
+        <h4>Аяқталған тесттер</h4>
+
+        <?= GridView::widget([
+            'dataProvider' => $dataProvider4,
+            'layout' => "{items}",
+            'columns' => [
+                [
+                    'attribute' => 'title',
+                    'label' => 'Атауы',
+                    'format' => 'raw',
+                    'value' => function ($model) {
+                        return Html::a($model->title, ['view', 'id' => $model->id]);
+                    },
+                ],
+                [
+                    'attribute' => 'subject_id',
+                    'value' => 'subject.subject',
+                    'label' => 'Пән'
+                ],
+                [
+                    'attribute' => 'start_time',
+                    'label' => 'Басталуы',
+                    'value' => function ($model) {
+                        return date('d/m H:i', strtotime($model->start_time)); // Short month name
+                    },
+                ],
+                [
+                    'attribute' => 'end_time',
+                    'label' => 'Аяқталуы',
+                    'value' => function ($model) {
+                        return date('d/m H:i', strtotime($model->start_time)); // Short month name
+                    },
+                ],
+            ],
+        ]); ?>
     </div>
 
 

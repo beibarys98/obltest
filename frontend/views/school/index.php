@@ -11,14 +11,14 @@ use yii\widgets\Pjax;
 /** @var common\models\SchoolSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = Yii::t('app', 'Школы');
+$this->title = Yii::t('app', 'Мектептер');
 ?>
 <div class="school-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a(Yii::t('app', 'Добавить школу'), ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a(Yii::t('app', 'Жаңа мектеп'), ['create'], ['class' => 'btn btn-success']) ?>
     </p>
 
     <?php Pjax::begin(); ?>
@@ -44,10 +44,11 @@ $this->title = Yii::t('app', 'Школы');
             ],
             [
                 'attribute' => 'name',
-                'label' => 'Имя'
+                'label' => 'Атауы'
             ],
             [
                 'class' => ActionColumn::className(),
+                'template' => '{update} {delete}',
                 'urlCreator' => function ($action, School $model, $key, $index, $column) {
                     return Url::toRoute([$action, 'id' => $model->id]);
                  }

@@ -7,7 +7,8 @@ $params = array_merge(
 );
 
 return [
-    'language' => 'ru',
+    'language' => 'kz',
+    'timezone' => 'Asia/Almaty',
     'name' => 'Obl Test',
 
     'id' => 'app-frontend',

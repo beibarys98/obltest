@@ -2,10 +2,13 @@
 
 namespace frontend\controllers;
 
+use common\models\File;
 use common\models\Formula;
 use common\models\Question;
+use common\models\Result;
 use common\models\Test;
 use common\models\TestSearch;
+use kartik\mpdf\Pdf;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\web\Controller;
@@ -36,21 +39,26 @@ class TestController extends Controller
     public function actionIndex()
     {
         $dataProvider = new ActiveDataProvider([
-            'query' => Test::find()->andWhere(['status' => 'загрузите формулы']),
+            'query' => Test::find()->andWhere(['status' => 'new']),
         ]);
 
         $dataProvider2 = new ActiveDataProvider([
-            'query' => Test::find()->andWhere(['status' => 'готов к публикаций'])
+            'query' => Test::find()->andWhere(['status' => 'ready'])
         ]);
 
         $dataProvider3 = new ActiveDataProvider([
-            'query' => Test::find()->andWhere(['status' => 'опубликован'])
+            'query' => Test::find()->andWhere(['status' => 'public'])
+        ]);
+
+        $dataProvider4 = new ActiveDataProvider([
+            'query' => Test::find()->andWhere(['status' => 'finished'])
         ]);
 
         return $this->render('index', [
             'dataProvider' => $dataProvider,
             'dataProvider2' => $dataProvider2,
             'dataProvider3' => $dataProvider3,
+            'dataProvider4' => $dataProvider4,
         ]);
     }
 
@@ -72,13 +80,8 @@ class TestController extends Controller
         if ($this->request->isPost) {
             if ($model->load($this->request->post())) {
 
-                if($model->has_equation){
-                    $model->status = 'загрузите формулы';
-                }else{
-                    $model->status = 'готов к публикаций';
-                }
-
-                $model->save();
+                $model->status = 'new';
+                $model->save(false);
 
                 $lines = explode("\n", $model->test);
 
@@ -113,12 +116,52 @@ class TestController extends Controller
         ]);
     }
 
-    public function actionPublish($id){
+    public function actionReady($id){
         $test = Test::findOne($id);
-        $test->status = 'опубликован';
+        $test->status = 'ready';
         $test->save(false);
 
-        return $this->redirect(['index']);
+        return $this->redirect(['view', 'id' => $id]);
+    }
+
+    public function actionPublish($id){
+        $test = Test::findOne($id);
+        $test->status = 'public';
+        $test->save(false);
+
+        return $this->redirect(['view', 'id' => $id]);
+    }
+
+    public function actionEnd($id){
+        $test = Test::findOne($id);
+        $test->status = 'finished';
+        $test->save(false);
+
+        return $this->redirect(['view', 'id' => $id]);
+    }
+
+    public function actionResult($id)
+    {
+        $results = new ActiveDataProvider([
+            'query' => Result::find()
+                ->andWhere(['test_id' => $id])
+                ->orderBy(['result' => SORT_DESC]),
+        ]);
+
+        //save results in pdf
+        $content = $this->renderPartial('result', [
+            'results' => $results
+        ]);
+
+        $pdf = new Pdf([
+            'mode' => Pdf::MODE_UTF8,
+            'content' => $content,
+            'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
+            'cssInline' => '.kv-heading-1{font-size:18px}',
+            'filename' => 'Нәтиже.pdf',
+        ]);
+
+        return $pdf->render();
     }
 
     public function actionFormula($id){
@@ -183,13 +226,6 @@ class TestController extends Controller
                 }
             }
             if ($this->request->isPost && $model->load($this->request->post())) {
-
-                if($model->has_equation){
-                    $model->status = 'загрузите формулы';
-                }else{
-                    $model->status = 'готов к публикаций';
-                }
-
                 $model->save(false);
 
                 return $this->redirect(['view', 'id' => $model->id]);

@@ -1,6 +1,7 @@
 <?php
 
 use common\models\Formula;
+use common\models\Test;
 use yii\bootstrap5\ActiveForm;
 use yii\helpers\Html;
 use yii\helpers\Url;
@@ -11,6 +12,7 @@ use yii\widgets\DetailView;
 /** @var common\models\Test $test */
 /** @var $questions*/
 /** @var $answers*/
+/** @var $remaining*/
 
 $this->title = $test->title;
 \yii\web\YiiAsset::register($this);
@@ -109,12 +111,39 @@ $isActive = $now >= $startTime && $now<= $endTime;
     <?php endforeach; ?>
 
     <div class="text-center mt-4">
-        <?= Html::submitButton('Завершить', [
+        <?= Html::submitButton('Аяқтау', [
             'class' => 'btn btn-success',
-            'onclick' => 'return confirm("Вы уверены, что хотите завершить?")',
+            'onclick' => 'return confirm("Сенімдісіз бе?")',
         ]) ?>
     </div>
 
     <?php ActiveForm::end(); ?>
+
+    <div class="shadow" style="position: fixed;
+        bottom: 10%; right: 9%; z-index: 1000;
+        width: 200px; height: 100px; border: 1px solid black;
+        border-radius: 10px; text-align: center;">
+        <div>
+            Аяқталуы: <?= date('H:i', strtotime($test->end_time))?>
+        </div>
+        <div class="mt-1">
+            Аяқталуына қалды
+        </div>
+        <?php
+        $startTime = new DateTime();
+        $endTime = new DateTime($test->end_time);
+        $interval = $startTime->diff($endTime);
+        $hours = str_pad($interval->h, 2, '0', STR_PAD_LEFT);
+        $minutes = str_pad($interval->i, 2, '0', STR_PAD_LEFT);
+        $seconds = str_pad($interval->s, 2, '0', STR_PAD_LEFT);
+        $formattedTime = "$hours:$minutes:$seconds";
+        ?>
+        <?php \yii\widgets\Pjax::begin()?>
+        <?= $this->render('_time_display', [
+            'test' => $test,
+            'time' => $formattedTime
+        ])?>
+        <?php \yii\widgets\Pjax::end()?>
+    </div>
 
 </div>

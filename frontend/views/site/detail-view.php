@@ -10,7 +10,8 @@ use yii\widgets\DetailView;
 
 /** @var yii\web\View $this */
 /** @var common\models\Test $test */
-/** @var $file*/
+/** @var $report*/
+/** @var $certificate*/
 /** @var $isActive*/
 
 $this->title = $test->title;
@@ -27,7 +28,7 @@ $this->title = $test->title;
             [
                 'class' => $isActive ? 'btn btn-success active' : 'btn btn-success disabled',
                 'data' => [
-                    'confirm' => Yii::t('app', 'Вы уверены что хотите начать?'),
+                    'confirm' => Yii::t('app', 'Сенімдісіз бе?'),
                     'method' => 'post',
                 ],
             ]
@@ -57,22 +58,31 @@ $this->title = $test->title;
     ]) ?>
 
     <?= GridView::widget([
-        'dataProvider' => $file,
+        'dataProvider' => $report,
         'layout' => "{items}",
         'columns' => [
             [
                 'attribute' => 'path',
-                'label' => 'Файлдар',
+                'label' => 'Қатемен жұмыс',
                 'format' => 'raw',
                 'value' => function ($model) {
-                    if (preg_match('/\.pdf$/i', $model->path)) {
-                        $text = 'Қатемен жұмыс';
-                    } elseif (preg_match('/\.(jpeg|jpg)$/i', $model->path)) {
-                        $text = 'Сертификат';
-                    } else {
-                        $text = $model->path; // Default to the path if no match
-                    }
-                    return Html::a($text,
+                    return Html::a('Қатемен жұмыс',
+                        ['download', 'id' => $model->id]);
+                },
+            ],
+        ],
+    ]); ?>
+
+    <?= GridView::widget([
+        'dataProvider' => $certificate,
+        'layout' => "{items}",
+        'columns' => [
+            [
+                'attribute' => 'path',
+                'label' => 'Сертификат',
+                'format' => 'raw',
+                'value' => function ($model) {
+                    return Html::a('Сертификат',
                         ['download', 'id' => $model->id]);
                 },
             ],

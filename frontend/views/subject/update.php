@@ -5,7 +5,7 @@ use yii\helpers\Html;
 /** @var yii\web\View $this */
 /** @var common\models\Subject $model */
 
-$this->title = Yii::t('app', 'Изменить: {name}', [
+$this->title = Yii::t('app', '{name}', [
     'name' => $model->subject,
 ]);
 ?>

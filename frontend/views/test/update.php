@@ -1,6 +1,8 @@
 <?php
 
 use common\models\Question;
+use common\models\Subject;
+use kartik\datetime\DateTimePicker;
 use yii\bootstrap5\ActiveForm;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
@@ -15,18 +17,40 @@ $this->title = Yii::t('app', '{name}', [
 ?>
 <div class="test-update">
 
-
-
     <?php $form = ActiveForm::begin(['options' => ['enctype' => 'multipart/form-data']]); ?>
 
-    <?= $form->field($model, 'title')->textInput(['style' => 'font-size: 24px;'])->label(false)?>
+    <div class="p-3 shadow" style="border: 1px solid black; border-radius: 10px;">
+        <?php
+        $subjects = ArrayHelper::map(Subject::find()->all(), 'id', 'subject');
+        ?>
 
-    <div class="mt-2">
-        <?= $form->field($model, 'has_equation')->checkbox(['class' => 'form-check-input'])->label('Есть формулы') ?>
+        <?= $form->field($model, 'subject_id')->dropDownList(
+            $subjects,
+            ['prompt' => 'Пән таңдаңыз'])->label('Пән') ?>
+
+        <?= $form->field($model, 'title')->textInput()->label('Атауы')?>
+
+        <?= $form->field($model, 'start_time')->widget(DateTimePicker::classname(), [
+            'options' => ['placeholder' => 'Күнін және уақытын таңдаңыз'],
+            'pluginOptions' => [
+                'autoclose' => true,
+                'format' => 'yyyy-mm-dd hh:ii',
+                'todayHighlight' => true
+            ]
+        ])->label('Басталуы');?>
+        <?= $form->field($model, 'end_time')->widget(DateTimePicker::classname(), [
+            'options' => ['placeholder' => 'Күнін және уақытын таңдаңыз'],
+            'pluginOptions' => [
+                'autoclose' => true,
+                'format' => 'yyyy-mm-dd hh:ii',
+                'todayHighlight' => true
+            ]
+        ])->label('Аяқталуы');?>
     </div>
+    <br>
 
     <?php foreach ($model2 as $m2): ?>
-        <div style="font-size: 24px;">
+        <div>
             <div class="d-flex">
                 <div class="me-3">
                     <?= $m2->number; ?>
@@ -74,7 +98,7 @@ $this->title = Yii::t('app', '{name}', [
 
             <div class="d-flex mt-1">
                 <div class="me-3 ms-5">
-                    <?= 'Правильный ответ'; ?>
+                    <?= 'Дұрыс жауабы'; ?>
                 </div>
                 <?php
                 $answers = ['a' => 'a', 'b' => 'b', 'c' => 'c', 'd' => 'd'];
@@ -89,7 +113,7 @@ $this->title = Yii::t('app', '{name}', [
     <?php endforeach; ?>
 
     <div class="form-group">
-        <?= Html::submitButton(Yii::t('app', 'Сохранить'),
+        <?= Html::submitButton(Yii::t('app', 'Сақтау'),
             [
                 'class' => 'btn btn-success rounded-circle shadow',
                 'style' => 'position: fixed;

@@ -20,7 +20,7 @@ use yii\bootstrap5\ActiveForm;
 use yii\helpers\ArrayHelper;
 use kartik\select2\Select2;
 
-$this->title = 'Signup';
+$this->title = 'Тіркелу';
 ?>
 <div class="site-signup">
     <h1><?= Html::encode($this->title) ?></h1>
@@ -29,9 +29,9 @@ $this->title = 'Signup';
         <div class="col-lg-5">
             <?php $form = ActiveForm::begin(['id' => 'form-signup']); ?>
 
-                <?= $form->field($model2, 'name')->textInput(['autofocus' => true]) ?>
+                <?= $form->field($model2, 'name')->textInput(['autofocus' => true])->label('Есіміңіз') ?>
 
-                <?= $form->field($model, 'username')->textInput() ?>
+                <?= $form->field($model, 'username')->textInput()->label('Логин') ?>
 
                 <?php
                 $schools = ArrayHelper::map(School::find()->all(), 'id', 'name');
@@ -39,11 +39,11 @@ $this->title = 'Signup';
 
                 <?= $form->field($model2, 'school_id')->widget(Select2::classname(), [
                     'data' => $schools,
-                    'options' => ['placeholder' => 'Select School'],
+                    'options' => ['placeholder' => 'Мектеп таңдаңыз'],
                     'pluginOptions' => [
                         'allowClear' => true
                     ],
-                ]);?>
+                ])->label('Мектеп');?>
 
                 <?php
                 $subjects = ArrayHelper::map(Subject::find()->all(), 'id', 'subject');
@@ -51,12 +51,12 @@ $this->title = 'Signup';
 
                 <?= $form->field($model2, 'subject_id')->dropDownList(
                     $subjects,
-                    ['prompt' => 'Select Subject']) ?>
+                    ['prompt' => 'Пән таңдаңыз'])->label('Пән') ?>
 
-                <?= $form->field($model, 'password')->passwordInput() ?>
+                <?= $form->field($model, 'password')->passwordInput()->label('Құпия сөз') ?>
 
                 <div class="form-group">
-                    <?= Html::submitButton('Signup', ['class' => 'btn btn-primary', 'name' => 'signup-button']) ?>
+                    <?= Html::submitButton('Тіркелу', ['class' => 'btn btn-primary', 'name' => 'signup-button']) ?>
                 </div>
 
             <?php ActiveForm::end(); ?>

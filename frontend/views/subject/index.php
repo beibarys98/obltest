@@ -10,14 +10,14 @@ use yii\widgets\Pjax;
 /** @var common\models\SubjectSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = Yii::t('app', 'Предметы');
+$this->title = Yii::t('app', 'Пәндер');
 ?>
 <div class="subject-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a(Yii::t('app', 'Добавить предмет'), ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a(Yii::t('app', 'Жаңа пән'), ['create'], ['class' => 'btn btn-success']) ?>
     </p>
 
     <?php Pjax::begin(); ?>
@@ -31,10 +31,11 @@ $this->title = Yii::t('app', 'Предметы');
             'id',
             [
                 'attribute' => 'subject',
-                'label' => 'Предмет'
+                'label' => 'Пән'
             ],
             [
                 'class' => ActionColumn::className(),
+                'template' => '{update} {delete}',
                 'urlCreator' => function ($action, Subject $model, $key, $index, $column) {
                     return Url::toRoute([$action, 'id' => $model->id]);
                  }

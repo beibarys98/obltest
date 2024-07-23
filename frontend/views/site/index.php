@@ -28,12 +28,18 @@ $this->title = 'Obl Test';
             ],
             [
                 'attribute' => 'start_time',
-                'label' => 'Басталуы'
+                'label' => 'Басталуы',
+                'value' => function ($model) {
+                    return date('d/m H:i', strtotime($model->start_time)); // Short month name
+                },
             ],
             [
                 'attribute' => 'end_time',
-                'label' => 'Аяқталуы'
-            ]
+                'label' => 'Аяқталуы',
+                'value' => function ($model) {
+                    return date('d/m H:i', strtotime($model->start_time)); // Short month name
+                },
+            ],
         ],
     ]); ?>
 </div>

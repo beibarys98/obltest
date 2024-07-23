@@ -11,7 +11,7 @@ use yii\helpers\Html;
 /** @var $model */
 /** @var $model2*/
 
-$this->title = Yii::t('app', 'Изменить: {name}', [
+$this->title = Yii::t('app', '{name}', [
     'name' => $model2->name,
 ]);
 ?>
@@ -21,7 +21,7 @@ $this->title = Yii::t('app', 'Изменить: {name}', [
 
     <?php $form = ActiveForm::begin(); ?>
 
-    <?= $form->field($model2, 'name')->textInput(['autofocus' => true])->label('Имя') ?>
+    <?= $form->field($model2, 'name')->textInput(['autofocus' => true])->label('Есімі') ?>
 
     <?= $form->field($model, 'username')->textInput()->label('Логин') ?>
 
@@ -31,11 +31,11 @@ $this->title = Yii::t('app', 'Изменить: {name}', [
 
     <?= $form->field($model2, 'school_id')->widget(Select2::classname(), [
         'data' => $schools,
-        'options' => ['placeholder' => 'Выберите школу'],
+        'options' => ['placeholder' => 'Мектеп таңдаңыз'],
         'pluginOptions' => [
             'allowClear' => true
         ],
-    ])->label('Школа');?>
+    ])->label('Мектеп');?>
 
     <?php
     $subjects = ArrayHelper::map(Subject::find()->all(), 'id', 'subject');
@@ -43,12 +43,12 @@ $this->title = Yii::t('app', 'Изменить: {name}', [
 
     <?= $form->field($model2, 'subject_id')->dropDownList(
         $subjects,
-        ['prompt' => 'Выберите предмет'])->label('Предмет') ?>
+        ['prompt' => 'Пән таңдаңыз'])->label('Пән') ?>
 
-    <?= $form->field($model, 'password')->passwordInput()->label('Сменить пароль') ?>
+    <?= $form->field($model, 'password')->passwordInput()->label('Құпия сөз өзгерту') ?>
 
     <div class="form-group mt-3">
-        <?= Html::submitButton(Yii::t('app', 'Сохранить'), ['class' => 'btn btn-success']) ?>
+        <?= Html::submitButton(Yii::t('app', 'Сақтау'), ['class' => 'btn btn-success']) ?>
     </div>
 
     <?php ActiveForm::end(); ?>

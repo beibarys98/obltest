@@ -9,7 +9,7 @@ use yii\helpers\Html;
 /** @var yii\web\View $this */
 /** @var common\models\Test $model */
 
-$this->title = Yii::t('app', 'Добавить тест');
+$this->title = Yii::t('app', 'Жаңа тест');
 ?>
 <div class="test-create">
 
@@ -23,35 +23,31 @@ $this->title = Yii::t('app', 'Добавить тест');
 
     <?= $form->field($model, 'subject_id')->dropDownList(
         $subjects,
-        ['prompt' => 'Выберите предмет'])->label('Предмет') ?>
+        ['prompt' => 'Пән таңдаңыз'])->label('Пән') ?>
 
-    <?= $form->field($model, 'title')->textInput(['maxlength' => true])->label('Заголовок') ?>
-
-    <div class="mt-2">
-        <?= $form->field($model, 'has_equation')->checkbox(['class' => 'form-check-input'])->label('Есть формулы') ?>
-    </div>
+    <?= $form->field($model, 'title')->textInput(['maxlength' => true])->label('Атауы') ?>
 
     <?= $form->field($model, 'test')->textarea(['rows' => 7])->label('Тест') ?>
 
     <?= $form->field($model, 'start_time')->widget(DateTimePicker::classname(), [
-        'options' => ['placeholder' => 'Select date and time ...'],
+        'options' => ['placeholder' => 'Күнін және уақытын таңдаңыз'],
         'pluginOptions' => [
             'autoclose' => true,
             'format' => 'yyyy-mm-dd hh:ii',
             'todayHighlight' => true
         ]
-    ]);?>
+    ])->label('Басталуы');?>
     <?= $form->field($model, 'end_time')->widget(DateTimePicker::classname(), [
-        'options' => ['placeholder' => 'Select date and time ...'],
+        'options' => ['placeholder' => 'Күнін және уақытын таңдаңыз'],
         'pluginOptions' => [
             'autoclose' => true,
             'format' => 'yyyy-mm-dd hh:ii',
             'todayHighlight' => true
         ]
-    ]);?>
+    ])->label('Аяқталуы');?>
 
     <div class="form-group mt-3">
-        <?= Html::submitButton(Yii::t('app', 'Сохранить'), ['class' => 'btn btn-success']) ?>
+        <?= Html::submitButton(Yii::t('app', 'Сақтау'), ['class' => 'btn btn-success']) ?>
     </div>
 
     <?php ActiveForm::end(); ?>

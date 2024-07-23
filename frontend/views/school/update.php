@@ -10,7 +10,7 @@ use yii\helpers\Html;
 /** @var yii\web\View $this */
 /** @var common\models\School $model */
 
-$this->title = Yii::t('app', 'Изменить: {name}', [
+$this->title = Yii::t('app', '{name}', [
     'name' => $model->name,
 ]);
 ?>
@@ -26,7 +26,7 @@ $this->title = Yii::t('app', 'Изменить: {name}', [
 
     <?= $form->field($model, 'region_id')->dropDownList(
         $regions,
-        ['prompt' => 'Выберите регион'])->label('Регион') ?>
+        ['prompt' => 'Регион таңдаңыз'])->label('Регион') ?>
 
     <?php
     $town = ArrayHelper::map(Town::find()->all(), 'name', 'name');
@@ -34,16 +34,16 @@ $this->title = Yii::t('app', 'Изменить: {name}', [
 
     <?= $form->field($model, 'town')->widget(Select2::classname(), [
         'data' => $town,
-        'options' => ['placeholder' => 'Выберите район'],
+        'options' => ['placeholder' => 'Район таңдаңыз'],
         'pluginOptions' => [
             'allowClear' => true
         ],
     ])->label('Район');?>
 
-    <?= $form->field($model, 'name')->textInput()?>
+    <?= $form->field($model, 'name')->textInput()->label('Атауы')?>
 
     <div class="form-group mt-3">
-        <?= Html::submitButton(Yii::t('app', 'Сохранить'), ['class' => 'btn btn-success']) ?>
+        <?= Html::submitButton(Yii::t('app', 'Сақтау'), ['class' => 'btn btn-success']) ?>
     </div>
 
     <?php ActiveForm::end(); ?>
