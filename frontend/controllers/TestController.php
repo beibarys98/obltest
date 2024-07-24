@@ -52,6 +52,13 @@ class TestController extends Controller
         $dataProvider3 = new ActiveDataProvider([
             'query' => Test::find()->andWhere(['status' => 'public'])
         ]);
+        $test = Test::find()->andWhere(['status' => 'public'])->all();
+        foreach ($test as $test) {
+            if (new DateTime() >= new DateTime($test->end_time)) {
+                $test->status = 'finished';
+                $test->save(false);
+            }
+        }
 
         $dataProvider4 = new ActiveDataProvider([
             'query' => Test::find()->andWhere(['status' => 'finished'])
@@ -72,11 +79,10 @@ class TestController extends Controller
             $test->status = 'finished';
             $test->save(false);
         }
-
         $questions = Question::find()->andWhere(['test_id' => $id])->all();
 
         return $this->render('view', [
-            'test' => $this->findModel($id),
+            'test' => $test,
             'questions' => $questions,
         ]);
     }
@@ -195,9 +201,13 @@ class TestController extends Controller
             $this->certificate(Teacher::findOne($thirdPlace->teacher_id), Test::findOne($id), 3);
         }
 
-        $remainingResults = array_slice($topResults, 3);
-        foreach ($remainingResults as $result) {
-            $this->certificate(Teacher::findOne($result->teacher_id), Test::findOne($id), 4);
+        if (count($topResults) >= 4) {
+            $remainingResults = array_slice($topResults, 3);
+            foreach ($remainingResults as $result) {
+                $teacher = Teacher::findOne($result->teacher_id);
+                $test = Test::findOne($id);
+                $this->certificate($teacher, $test, 4);
+            }
         }
 
         return $this->redirect(['view', 'id' => $id]);
@@ -318,11 +328,22 @@ class TestController extends Controller
 
     public function actionDelete($id)
     {
+        $test = Test::findOne($id);
         $questions = Question::find()->where(['test_id' => $id])->all();
         foreach ($questions as $question) {
+            $formulas = Formula::find()->andWhere(['question_id' => $question->id])->all();
+            foreach ($formulas as $formula){
+                unlink($formula->path);
+                $formula->delete();
+            }
             $question->delete();
         }
-        $this->findModel($id)->delete();
+        $results = Result::find()->andWhere(['test_id' => $id])->all();
+        foreach ($results as $result){
+            $result->delete();
+        }
+        $test->status = 'deleted';
+        $test->save(false);
 
         return $this->redirect(['index']);
     }

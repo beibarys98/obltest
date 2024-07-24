@@ -1,6 +1,7 @@
 <?php
 
 use common\models\Formula;
+use common\models\ResultPdf;
 use yii\helpers\Html;
 use yii\widgets\DetailView;
 
@@ -13,21 +14,21 @@ $this->title = $test->title;
 ?>
 <div class="test-view">
 
-    <h1><?= Html::encode($this->title) ?></h1>
-
-    <div class="shadow p-1 mb-3" style="border: 1px solid black; border-radius: 10px;">
+    <div class="shadow p-3 mb-3" style="border: 1px solid black; border-radius: 10px;">
+        <label for="readonly">Атауы</label>
+        <input id="readonly" class="form-control" type="text" placeholder="<?= $test->title ?>" readonly>
         <label for="readonly">Пән</label>
         <input id="readonly" class="form-control" type="text" placeholder="<?= $test->subject->subject ?>" readonly>
-        <label for="readonly">Статус</label>
-        <input id="readonly" class="form-control" type="text" placeholder="<?= $test->status ?>" readonly>
         <label for="readonly">Басталуы</label>
         <input id="readonly" class="form-control" type="text" placeholder="<?= date('d/m H:i', strtotime($test->start_time)) ?>" readonly>
         <label for="readonly">Аяқталуы</label>
         <input id="readonly" class="form-control" type="text" placeholder="<?= date('d/m H:i', strtotime($test->end_time)) ?>" readonly>
+        <label for="readonly">Статус</label>
+        <input id="readonly" class="form-control" type="text" placeholder="<?= Yii::t('app', $test->status) ?>" readonly>
     </div>
 
     <div class="shadow p-1 mb-3 me-5" style="border: 1px solid black; border-radius: 10px; display: inline-block;">
-        <?= Html::a(Yii::t('app', 'Формула қосу'),
+        <?= Html::a(Yii::t('app', 'Формула'),
                 ['formula', 'id' => $test->id],
                 ['class' => 'btn btn-primary']) ?>
         <?= Html::a(Yii::t('app', 'Өзгерту'),
@@ -51,19 +52,27 @@ $this->title = $test->title;
                 ? Html::a(Yii::t('app', 'Дайын') ,
                     ['ready', 'id' => $test->id],
                     ['class' => 'btn btn-success'])
-                : ($test->status == 'public'
-                    ? Html::a(Yii::t('app', 'Алып тастау') ,
-                        ['ready', 'id' => $test->id],
-                        ['class' => 'btn btn-secondary'])
-                    : Html::a(Yii::t('app', 'Жариялау') ,
+                : ($test->status == 'ready'
+                    ? Html::a(Yii::t('app', 'Жариялау'),
                         ['publish', 'id' => $test->id],
-                        ['class' => 'btn btn-success']))?>
+                        [
+                            'class' => 'btn btn-success',
+                            'data' => [
+                                'confirm' => Yii::t('app', 'Сенімдісіз бе?'),
+                        ]
+                    ])
+                    : null ) ?>
             <?php endif;?>
             <?php if($test->status == 'public' || $test->status == 'finished'):?>
-                <?= $test->status == 'public'
+                <?= !ResultPdf::findOne(['test_id' => $test->id])
                     ? Html::a(Yii::t('app', 'Аяқтау') ,
                         ['end', 'id' => $test->id],
-                        ['class' => 'btn btn-danger'])
+                        [
+                            'class' => 'btn btn-danger',
+                            'data' => [
+                                'confirm' => Yii::t('app', 'Сенімдісіз бе?'),
+                            ]
+                        ])
                     : ($test->status == 'finished'
                         ? Html::a(Yii::t('app', 'Нәтиже') ,
                             ['result', 'id' => $test->id],

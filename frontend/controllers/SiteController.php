@@ -104,7 +104,7 @@ class SiteController extends Controller
         $test = new ActiveDataProvider([
             'query' => Test::find()
                 ->andWhere(['subject_id' => $teacher->subject_id])
-                ->andWhere(['status' => ['public', 'finished']]),
+                ->andWhere(['status' => ['public', 'finished', 'deleted']]),
         ]);
 
         return $this->render('index', [
@@ -117,21 +117,10 @@ class SiteController extends Controller
         $test = Test::findOne($id);
         $questions = Question::find()->andWhere(['test_id' => $id])->all();
 
-        $timezone = new \DateTimeZone('Asia/Karachi'); // Adjust this if needed for GMT+5
-        $now = new \DateTime('now', $timezone);
-        $startTime = new \DateTime($test->start_time, $timezone);
-        $endTime = new \DateTime($test->end_time, $timezone);
-        $isActive = $now >= $startTime && $now<= $endTime;
-
-        if($isActive){
-            return $this->render('view', [
-                'test' => $test,
-                'questions' => $questions,
-            ]);
-        }else {
-            Yii::$app->session->setFlash('warning', 'Тест не активен!');
-            return $this->redirect(['detail-view']);
-        }
+        return $this->render('view', [
+            'test' => $test,
+            'questions' => $questions,
+        ]);
     }
 
     public function actionDetailView($id)
@@ -151,40 +140,23 @@ class SiteController extends Controller
                 ->andWhere(['LIKE', 'path', '%\.jpeg', false])
         ]);
 
-        $timezone = new \DateTimeZone('Asia/Karachi'); // Adjust this if needed for GMT+5
-        $now = new \DateTime('now', $timezone);
-        $startTime = new \DateTime($test->start_time, $timezone);
-        $endTime = new \DateTime($test->end_time, $timezone);
+        $now = new \DateTime();
+        $startTime = new \DateTime($test->start_time);
+        $endTime = new \DateTime($test->end_time);
 
         $hasFile = File::find()
             ->andWhere(['teacher_id' => $teacher->id])
             ->andWhere(['test_id' => $id])
             ->exists();
 
-        $isActive = $now >= $startTime && $now<= $endTime && !$hasFile;
+        $isActive = $now >= $startTime && $now<= $endTime
+            && !$hasFile && $test->status == 'public';
 
         return $this->render('detail-view', [
             'test' => Test::findOne($id),
             'report' => $report,
             'certificate' => $certificate,
             'isActive' => $isActive,
-        ]);
-    }
-
-    public function actionRefreshTime($id)
-    {
-        $test = Test::findOne($id);
-        $startTime = new DateTime();
-        $endTime = new DateTime($test->end_time);
-        $interval = $startTime->diff($endTime);
-        $hours = str_pad($interval->h, 2, '0', STR_PAD_LEFT);
-        $minutes = str_pad($interval->i, 2, '0', STR_PAD_LEFT);
-        $seconds = str_pad($interval->s, 2, '0', STR_PAD_LEFT);
-        $formattedTime = "$hours:$minutes:$seconds";
-
-        return $this->renderAjax('_time_display', [
-            'test' => $test,
-            'time' => $formattedTime,
         ]);
     }
 

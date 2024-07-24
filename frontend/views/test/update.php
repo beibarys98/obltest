@@ -20,6 +20,9 @@ $this->title = Yii::t('app', '{name}', [
     <?php $form = ActiveForm::begin(['options' => ['enctype' => 'multipart/form-data']]); ?>
 
     <div class="p-3 shadow" style="border: 1px solid black; border-radius: 10px;">
+
+        <?= $form->field($model, 'title')->textInput()->label('Атауы')?>
+
         <?php
         $subjects = ArrayHelper::map(Subject::find()->all(), 'id', 'subject');
         ?>
@@ -27,8 +30,6 @@ $this->title = Yii::t('app', '{name}', [
         <?= $form->field($model, 'subject_id')->dropDownList(
             $subjects,
             ['prompt' => 'Пән таңдаңыз'])->label('Пән') ?>
-
-        <?= $form->field($model, 'title')->textInput()->label('Атауы')?>
 
         <?= $form->field($model, 'start_time')->widget(DateTimePicker::classname(), [
             'options' => ['placeholder' => 'Күнін және уақытын таңдаңыз'],

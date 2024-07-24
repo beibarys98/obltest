@@ -19,8 +19,6 @@ $this->title = $test->title;
 ?>
 <div class="test-view">
 
-    <h1><?= Html::encode($this->title) ?></h1>
-
     <p>
         <?= Html::a(
             Yii::t('app', 'Бастау'),
@@ -48,11 +46,17 @@ $this->title = $test->title;
             ],
             [
                 'attribute' => 'start_time',
-                'label' => 'Басталуы'
+                'label' => 'Басталуы',
+                'value' => function ($model) {
+                    return date('d/m H:i', strtotime($model->start_time)); // Short month name
+                },
             ],
             [
                 'attribute' => 'end_time',
-                'label' => 'Аяқталуы'
+                'label' => 'Аяқталуы',
+                'value' => function ($model) {
+                    return date('d/m H:i', strtotime($model->end_time)); // Short month name
+                },
             ],
         ],
     ]) ?>

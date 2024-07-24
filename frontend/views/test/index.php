@@ -35,6 +35,7 @@ $this->title = Yii::t('app', 'Тесттер');
             <?= GridView::widget([
                 'dataProvider' => $dataProvider,
                 'layout' => "{items}",
+                'showHeader' => false,
                 'columns' => [
                     [
                         'attribute' => 'title',
@@ -68,11 +69,12 @@ $this->title = Yii::t('app', 'Тесттер');
         </div>
         <div class="col-4">
 
-            <h4>Өңделген тесттер</h4>
+            <h4>Дайын тесттер</h4>
 
             <?= GridView::widget([
                 'dataProvider' => $dataProvider2,
                 'layout' => "{items}",
+                'showHeader' => false,
                 'columns' => [
                     [
                         'attribute' => 'title',
@@ -111,6 +113,7 @@ $this->title = Yii::t('app', 'Тесттер');
             <?= GridView::widget([
                 'dataProvider' => $dataProvider3,
                 'layout' => "{items}",
+                'showHeader' => false,
                 'columns' => [
                     [
                         'attribute' => 'title',
@@ -151,6 +154,7 @@ $this->title = Yii::t('app', 'Тесттер');
         <?= GridView::widget([
             'dataProvider' => $dataProvider4,
             'layout' => "{items}",
+            'showHeader' => false,
             'columns' => [
                 [
                     'attribute' => 'title',
@@ -176,7 +180,7 @@ $this->title = Yii::t('app', 'Тесттер');
                     'attribute' => 'end_time',
                     'label' => 'Аяқталуы',
                     'value' => function ($model) {
-                        return date('d/m H:i', strtotime($model->start_time)); // Short month name
+                        return date('d/m H:i', strtotime($model->end_time)); // Short month name
                     },
                 ],
             ],

@@ -47,6 +47,7 @@ Select2Asset::register($this);
         $menuItems[] = ['label' => 'Мектептер', 'url' => ['/school/index']];
         $menuItems[] = ['label' => 'Пәндер', 'url' => ['/subject/index']];
         $menuItems[] = ['label' => 'Тесттер', 'url' => ['/test/index']];
+        $menuItems[] = ['label' => 'Нәтижелер', 'url' => ['/result-pdf/index']];
     }
 
     echo Nav::widget([

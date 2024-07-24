@@ -18,7 +18,7 @@ use yii\grid\GridView;
             ],
             [
                 'attribute' => 'result',
-                'label' => 'Натижесі',
+                'label' => 'Нәтижесі',
             ],
         ],
     ]); ?>

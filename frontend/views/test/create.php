@@ -17,6 +17,8 @@ $this->title = Yii::t('app', 'Жаңа тест');
 
     <?php $form = ActiveForm::begin(); ?>
 
+    <?= $form->field($model, 'title')->textInput(['maxlength' => true])->label('Атауы') ?>
+
     <?php
     $subjects = ArrayHelper::map(Subject::find()->all(), 'id', 'subject');
     ?>
@@ -24,8 +26,6 @@ $this->title = Yii::t('app', 'Жаңа тест');
     <?= $form->field($model, 'subject_id')->dropDownList(
         $subjects,
         ['prompt' => 'Пән таңдаңыз'])->label('Пән') ?>
-
-    <?= $form->field($model, 'title')->textInput(['maxlength' => true])->label('Атауы') ?>
 
     <?= $form->field($model, 'test')->textarea(['rows' => 7])->label('Тест') ?>
 

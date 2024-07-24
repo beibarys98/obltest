@@ -40,6 +40,13 @@ $this->title = 'Obl Test';
                     return date('d/m H:i', strtotime($model->end_time)); // Short month name
                 },
             ],
+            [
+                'attribute' => 'status',
+                'label' => 'Статус',
+                'value' => function ($model) {
+                    return Yii::t('app', $model->status);
+                }
+            ]
         ],
     ]); ?>
 </div>
