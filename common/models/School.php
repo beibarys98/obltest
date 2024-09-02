@@ -9,7 +9,8 @@ use Yii;
  *
  * @property int $id
  * @property int|null $region_id
- * @property string $school
+ * @property string|null $town
+ * @property string|null $name
  *
  * @property Region $region
  * @property Teacher[] $teachers
@@ -30,8 +31,9 @@ class School extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['school'], 'required'],
-            [['school'], 'string', 'max' => 255],
+            [['region_id'], 'integer'],
+            [['town', 'name'], 'string', 'max' => 255],
+            [['region_id'], 'exist', 'skipOnError' => true, 'targetClass' => Region::class, 'targetAttribute' => ['region_id' => 'id']],
         ];
     }
 
@@ -43,7 +45,8 @@ class School extends \yii\db\ActiveRecord
         return [
             'id' => Yii::t('app', 'ID'),
             'region_id' => Yii::t('app', 'Region ID'),
-            'school' => Yii::t('app', 'School'),
+            'town' => Yii::t('app', 'Town'),
+            'name' => Yii::t('app', 'Name'),
         ];
     }
 
