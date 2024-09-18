@@ -1,26 +1,38 @@
 <?php
 
-use common\models\Formula;
-use common\models\Test;
+use common\models\Answer;
 use yii\bootstrap5\ActiveForm;
+use yii\db\Expression;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\web\View;
-use yii\widgets\DetailView;
+use yii\web\YiiAsset;
 
-/** @var yii\web\View $this */
-/** @var common\models\Test $test */
+/** @var $this */
+/** @var $test */
 /** @var $questions*/
-/** @var $answers*/
-/** @var $remaining*/
+/** @var $startTime*/
 
 $this->title = $test->title;
-\yii\web\YiiAsset::register($this);
+YiiAsset::register($this);
 
-$startTime = time();
-$endTime = strtotime($test->end_time);
-$durationInSeconds = $endTime - $startTime;
-$durationInSeconds = max($durationInSeconds, 0);
+// Assuming $test->duration is in HH:MM:SS format
+$durationArray = explode(':', $test->duration);
+$totalDurationInSeconds = ($durationArray[0] * 3600) + ($durationArray[1] * 60) + $durationArray[2];
+$totalDurationInSeconds = max($totalDurationInSeconds, 0);
+
+// Create DateTime objects for start time and current time
+$startTime2 = new DateTime($startTime->start_time); // Assuming $startTimeModel->start_time is in 'Y-m-d H:i:s' format
+$currentTime = new DateTime('now');
+
+// Calculate the elapsed time in seconds
+$elapsedTimeInSeconds = $currentTime->getTimestamp() - $startTime2->getTimestamp();
+
+// Calculate remaining time in seconds
+$remainingTimeInSeconds = $totalDurationInSeconds - $elapsedTimeInSeconds;
+
+// Ensure remaining time is not negative
+$remainingTimeInSeconds = max($remainingTimeInSeconds, 0);
 
 $this->registerJs("
     function startTimer(duration, display) {
@@ -45,7 +57,7 @@ $this->registerJs("
     }
 
     window.onload = function () {
-        var duration = $durationInSeconds; // Countdown duration in seconds
+        var duration = $remainingTimeInSeconds; // Countdown duration in seconds
         var display = document.querySelector('#clock'); // Timer display element
         startTimer(duration, display);
     };
@@ -53,8 +65,6 @@ $this->registerJs("
 ?>
 
 <div class="test-view">
-
-    <h1><?= Html::encode($this->title) ?></h1>
 
     <?php $form = ActiveForm::begin([
         'id' => 'myForm',
@@ -64,100 +74,66 @@ $this->registerJs("
 
     <?= Html::hiddenInput('test_id', $test->id) ?>
 
-    <?php foreach ($questions as $q): ?>
-        <div style="font-size: 24px;">
-            <?= $q->number . '. '; ?>
-            <?= $q->question; ?>
-            <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'question'])):?>
-                <br>
-                <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
-                     class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
-            <?php endif;?>
+    <div style="font-size: 24px; user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;">
 
-            <div class="d-flex ms-5">
-                <input type="radio" name="answers[<?= $q->id ?>]" value="a" class="form-check-input me-1">
-                <?= 'a. '?>
+        <h1><?= Html::encode($this->title) ?></h1>
 
-                <?php if($q->answer1):?>
-                    <?= $q->answer1;?>
-                <?php else:?>
-                    <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'answer1'])):?>
-                        <br>
-                        <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
-                             class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
-                    <?php endif;?>
-                <?php endif;?>
-            </div>
-
-            <div class="d-flex ms-5">
-                <input type="radio" name="answers[<?= $q->id ?>]" value="b" class="form-check-input me-1">
-                <?= 'b. '?>
-
-                <?php if($q->answer2):?>
-                    <?= $q->answer2;?>
-                <?php else:?>
-                    <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'answer2'])):?>
-                        <br>
-                        <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
-                             class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
-                    <?php endif;?>
-                <?php endif;?>
-            </div>
-            <div class="d-flex ms-5">
-                <input type="radio" name="answers[<?= $q->id ?>]" value="c" class="form-check-input me-1">
-                <?= 'c. '?>
-
-                <?php if($q->answer3):?>
-                    <?= $q->answer3;?>
-                <?php else:?>
-                    <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'answer3'])):?>
-                        <br>
-                        <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
-                             class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
-                    <?php endif;?>
-                <?php endif;?>
-            </div>
-            <div class="d-flex ms-5">
-                <input type="radio" name="answers[<?= $q->id ?>]" value="d" class="form-check-input me-1">
-                <?= 'd. '?>
-
-                <?php if($q->answer4):?>
-                    <?= $q->answer4;?>
-                <?php else:?>
-                    <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'answer4'])):?>
-                        <br>
-                        <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
-                             class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
-                    <?php endif;?>
-                <?php endif;?>
-            </div>
-        </div>
-        <br>
-    <?php endforeach; ?>
+        <?php $number = 1; ?>
+        <?php foreach ($questions as $q): ?>
+            <?= $number++ . '. '; ?>
+            <?php if ($q->formula): ?>
+                <!-- Display the formula image if it exists -->
+                <?= Html::img(Url::to('@web/' . $q->formula), ['style' => 'max-width: 100px;']) ?>
+            <?php else: ?>
+                <!-- Display the question text if no formula exists -->
+                <?= Html::encode($q->question); ?>
+            <?php endif; ?>
+            <br>
+            <?php
+            $answers = Answer::find()
+                ->andWhere(['question_id' => $q->id])
+                ->orderBy(new Expression('RAND()'))
+                ->all();
+            $alphabet = range('A', 'Z'); // Array of alphabet letters
+            $index = 0; // Initialize index for letters
+            ?>
+            <?php foreach ($answers as $a): ?>
+                <input type="radio" name="answers[<?= $q->id ?>]" value="<?= $a->answer ?>" class="form-check-input me-1">
+                <?php if ($a->formula): ?>
+                    <!-- Display the formula image if it exists for the answer -->
+                    <?= $alphabet[$index++] . '. ' ?>
+                    <?= Html::img(Url::to('@web/' . $a->formula), ['style' => 'max-width: 100px;']) ?>
+                    <br>
+                <?php else: ?>
+                    <!-- Display the answer text if no formula exists -->
+                    <?= $alphabet[$index++] . '. ' . Html::encode($a->answer); ?><br>
+                <?php endif; ?>
+            <?php endforeach; ?>
+            <br>
+        <?php endforeach; ?>
+    </div>
 
     <div class="text-center mt-4">
-        <?= Html::submitButton('Аяқтау', [
+        <?= Html::submitButton(Yii::t('app', 'Завершить'), [
             'class' => 'btn btn-success',
-            'onclick' => 'return confirm("Сенімдісіз бе?")',
+            'onclick' => 'return confirm("' . Yii::t('app', 'Вы уверены?') . '")',
         ]) ?>
     </div>
 
     <?php ActiveForm::end(); ?>
 
-
-
     <div class="shadow" style="position: fixed;
         bottom: 10%; right: 9%; z-index: 1000;
         width: 150px; height: 90px; border: 1px solid black;
-        border-radius: 10px; text-align: center;">
+        border-radius: 10px; text-align: center;
+        background-color: white;">
         <div class="site-index">
             <div style="color: red;">
-                Парақшаны жаңартпаңыз!
+                <?= Yii::t('app', 'Не обновляйте страницу!')?>
             </div>
             <div class="jumbotron">
                 <p id="clock" style="font-size: 24px;"></p>
             </div>
         </div>
     </div>
-
 </div>

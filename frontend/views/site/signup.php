@@ -20,7 +20,7 @@ use yii\bootstrap5\ActiveForm;
 use yii\helpers\ArrayHelper;
 use kartik\select2\Select2;
 
-$this->title = 'Тіркелу';
+$this->title = Yii::t('app', 'Регистрация');
 ?>
 <div class="site-signup">
     <h1><?= Html::encode($this->title) ?></h1>
@@ -29,7 +29,7 @@ $this->title = 'Тіркелу';
         <div class="col-lg-5">
             <?php $form = ActiveForm::begin(['id' => 'form-signup']); ?>
 
-                <?= $form->field($model2, 'name')->textInput(['autofocus' => true])->label('Есіміңіз') ?>
+                <?= $form->field($model2, 'name')->textInput(['autofocus' => true])->label(Yii::t('app', 'Ф.И.О.')) ?>
 
                 <?= $form->field($model, 'username')->textInput()->label('Логин') ?>
 
@@ -39,24 +39,28 @@ $this->title = 'Тіркелу';
 
                 <?= $form->field($model2, 'school_id')->widget(Select2::classname(), [
                     'data' => $schools,
-                    'options' => ['placeholder' => 'Мектеп таңдаңыз'],
+                    'options' => ['placeholder' => Yii::t('app', 'Выберите школу')],
                     'pluginOptions' => [
                         'allowClear' => true
                     ],
-                ])->label('Мектеп');?>
+                ])->label(Yii::t('app', 'Школа'));?>
 
                 <?php
-                $subjects = ArrayHelper::map(Subject::find()->all(), 'id', 'subject');
+                // Determine which field to use based on the current language
+                $subjectField = (Yii::$app->language === 'ru-RU') ? 'subject_ru' : 'subject';
+
+                // Map the appropriate field for the subjects
+                $subjects = ArrayHelper::map(Subject::find()->all(), 'id', $subjectField);
                 ?>
 
                 <?= $form->field($model2, 'subject_id')->dropDownList(
                     $subjects,
-                    ['prompt' => 'Пән таңдаңыз'])->label('Пән') ?>
+                    ['prompt' => Yii::t('app', 'Выберите предмет')])->label(Yii::t('app', 'Предмет')) ?>
 
-                <?= $form->field($model, 'password')->passwordInput()->label('Құпия сөз') ?>
+                <?= $form->field($model, 'password')->passwordInput()->label(Yii::t('app', 'Пароль')) ?>
 
                 <div class="form-group">
-                    <?= Html::submitButton('Тіркелу', ['class' => 'btn btn-primary', 'name' => 'signup-button']) ?>
+                    <?= Html::submitButton(Yii::t('app', 'Регистрация'), ['class' => 'btn btn-primary', 'name' => 'signup-button']) ?>
                 </div>
 
             <?php ActiveForm::end(); ?>

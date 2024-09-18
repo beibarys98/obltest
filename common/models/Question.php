@@ -9,18 +9,17 @@ use Yii;
  *
  * @property int $id
  * @property int|null $test_id
- * @property int|null $number
  * @property string|null $question
- * @property string|null $answer1
- * @property string|null $answer2
- * @property string|null $answer3
- * @property string|null $answer4
- * @property string|null $correct_answer
+ * @property int|null $correct_answer
+ * @property string|null $formula
  *
+ * @property Answer[] $answers
  * @property Test $test
  */
 class Question extends \yii\db\ActiveRecord
 {
+    public $file;
+
     /**
      * {@inheritdoc}
      */
@@ -35,9 +34,11 @@ class Question extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['test_id', 'number'], 'integer'],
+            [['file'], 'file', 'extensions' => 'png, jpg, jpeg', 'maxSize' => 1024 * 1024 * 2, 'skipOnEmpty' => false],
+
+            [['test_id', 'correct_answer'], 'integer'],
             [['question'], 'string', 'max' => 1000],
-            [['answer1', 'answer2', 'answer3', 'answer4', 'correct_answer'], 'string', 'max' => 255],
+            [['formula'], 'string', 'max' => 255],
             [['test_id'], 'exist', 'skipOnError' => true, 'targetClass' => Test::class, 'targetAttribute' => ['test_id' => 'id']],
         ];
     }
@@ -50,14 +51,20 @@ class Question extends \yii\db\ActiveRecord
         return [
             'id' => Yii::t('app', 'ID'),
             'test_id' => Yii::t('app', 'Test ID'),
-            'number' => Yii::t('app', 'Number'),
             'question' => Yii::t('app', 'Question'),
-            'answer1' => Yii::t('app', 'Answer1'),
-            'answer2' => Yii::t('app', 'Answer2'),
-            'answer3' => Yii::t('app', 'Answer3'),
-            'answer4' => Yii::t('app', 'Answer4'),
             'correct_answer' => Yii::t('app', 'Correct Answer'),
+            'formula' => Yii::t('app', 'Formula'),
         ];
+    }
+
+    /**
+     * Gets query for [[Answers]].
+     *
+     * @return \yii\db\ActiveQuery|\common\models\query\AnswerQuery
+     */
+    public function getAnswers()
+    {
+        return $this->hasMany(Answer::class, ['question_id' => 'id']);
     }
 
     /**

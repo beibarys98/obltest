@@ -21,6 +21,7 @@ Select2Asset::register($this);
 <html lang="<?= Yii::$app->language ?>" class="h-100">
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" href="<?= Yii::getAlias('@web') ?>/images/adort2.png" type="image/jpg">
 
     <meta charset="<?= Yii::$app->charset ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -34,7 +35,7 @@ Select2Asset::register($this);
 <header>
     <?php
     NavBar::begin([
-        'brandLabel' => Yii::$app->name,
+        'brandLabel' => Html::img('@web/images/adort2.png', ['alt' => 'Logo', 'style' => 'height:30px; margin-right:10px;']) . Yii::t('app', Yii::$app->name),
         'brandUrl' => Admin::findOne(Yii::$app->user->id) ? Url::to('/test/index') : Yii::$app->homeUrl,
         'options' => [
             'class' => 'navbar navbar-expand-md navbar-dark bg-dark fixed-top',
@@ -47,7 +48,7 @@ Select2Asset::register($this);
         $menuItems[] = ['label' => 'Мектептер', 'url' => ['/school/index']];
         $menuItems[] = ['label' => 'Пәндер', 'url' => ['/subject/index']];
         $menuItems[] = ['label' => 'Тесттер', 'url' => ['/test/index']];
-        $menuItems[] = ['label' => 'Нәтижелер', 'url' => ['/result-pdf/index']];
+        $menuItems[] = ['label' => 'Төлемдер', 'url' => ['/payment/index']];
     }
 
     echo Nav::widget([
@@ -55,12 +56,27 @@ Select2Asset::register($this);
         'items' => $menuItems,
     ]);
     if (Yii::$app->user->isGuest) {
-        echo Html::tag('div',Html::a('Тіркелу',['/site/signup'],['class' => ['btn btn-link login text-decoration-none']]),['class' => ['d-flex']]);
-        echo Html::tag('div',Html::a('Кіру',['/site/login'],['class' => ['btn btn-link login text-decoration-none']]),['class' => ['d-flex']]);
+        echo Html::tag('div',
+            Html::a(Yii::t('app', 'Регистрация'),
+                ['/site/signup'],['class' => ['btn btn-link login text-decoration-none']]),['class' => ['d-flex']]);
+        echo Html::tag('div',
+            Html::a(Yii::t('app', 'Войти'),
+                ['/site/login'],['class' => ['btn btn-link login text-decoration-none']]),['class' => ['d-flex']]);
+        echo Html::tag('div', Html::a( Html::img(
+                    Yii::$app->language === 'kz-KZ'
+                        ? '/images/kz.png'
+                        : '/images/ru.png',
+                    ['alt' => Yii::$app->language === 'kz-KZ' ? 'Қазақша' : 'Русский', 'style' => 'width:32px;height:32px;', 'class' => 'rounded']
+                ),
+                ['/site/language', 'view' => '/'.Yii::$app->controller->id.'/'.Yii::$app->controller->action->id],
+                ['class' => ['btn btn-link login text-decoration-none']]
+            ),
+            ['class' => ['d-flex']]
+        );
     } else {
         echo Html::beginForm(['/site/logout'], 'post', ['class' => 'd-flex'])
             . Html::submitButton(
-                'Шығу (' . Yii::$app->user->identity->username . ')',
+                Yii::t('app', 'Выйти') . ' (' . Yii::$app->user->identity->username . ')',
                 ['class' => 'btn btn-link logout text-decoration-none']
             )
             . Html::endForm();
@@ -81,7 +97,7 @@ Select2Asset::register($this);
 
 <footer class="footer mt-auto py-3 text-muted">
     <div class="container">
-        <p class="float-start">&copy; <?= Html::encode(Yii::$app->name) ?> <?= date('Y') ?></p>
+        <p class="float-start">&copy; <?= Html::encode(Yii::t('app', Yii::$app->name)) ?> <?= date('Y') ?></p>
         <p class="float-end"><?= Yii::powered() ?></p>
     </div>
 </footer>

@@ -76,7 +76,7 @@ class TeacherController extends Controller
             && $model2->load(Yii::$app->request->post())
             && $model->signup($model2)) {
 
-            return $this->goHome();
+            return $this->redirect(['teacher/index']);
         }
 
         return $this->render('create', [
@@ -125,7 +125,10 @@ class TeacherController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $teacher = Teacher::findOne($id);
+        $user = User::findOne(['id' => $teacher->user_id]);
+        $teacher->delete();
+        $user->delete();
 
         return $this->redirect(['index']);
     }

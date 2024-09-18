@@ -7,10 +7,10 @@
 use yii\bootstrap5\Html;
 use yii\bootstrap5\ActiveForm;
 
-$this->title = 'Кіру';
+$this->title = Yii::$app->name;
 ?>
 <div class="site-login">
-    <h1><?= Html::encode($this->title) ?></h1>
+    <h1><?= Yii::t('app', 'Войти')?></h1>
 
     <div class="row">
         <div class="col-lg-5">
@@ -18,10 +18,10 @@ $this->title = 'Кіру';
 
                 <?= $form->field($model, 'username')->textInput(['autofocus' => true])->label('Логин') ?>
 
-                <?= $form->field($model, 'password')->passwordInput()->label('Құпия сөз') ?>
+                <?= $form->field($model, 'password')->passwordInput()->label(Yii::t('app', 'Пароль')) ?>
 
                 <div class="form-group">
-                    <?= Html::submitButton('Кіру', ['class' => 'btn btn-primary', 'name' => 'login-button']) ?>
+                    <?= Html::submitButton(Yii::t('app', 'Войти'), ['class' => 'btn btn-primary', 'name' => 'login-button']) ?>
                 </div>
 
             <?php ActiveForm::end(); ?>

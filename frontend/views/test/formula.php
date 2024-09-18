@@ -1,10 +1,7 @@
 <?php
 
-use common\models\Formula;
-use yii\bootstrap5\ActiveForm;
+use common\models\Answer;
 use yii\helpers\Html;
-use yii\helpers\Url;
-use yii\widgets\DetailView;
 
 /** @var yii\web\View $this */
 /** @var common\models\Test $test */
@@ -18,103 +15,29 @@ $this->title = $test->title;
 
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <?php foreach ($questions as $q): ?>
-
-        <div style="font-size: 24px;">
-            <?= $q->number . '. '; ?>
+    <div style="font-size: 24px;">
+        <?php $number = 1; ?>
+        <?php foreach ($questions as $q): ?>
+            <?= $number++ . '. '; ?>
             <?= $q->question; ?>
-            <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'question'])):?>
-                <br>
-                <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
-                     class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
-                <?= Html::a('x', ['delete-formula', 'id' => $f->id, 'test_id' => $test->id],
-                    ['class' => 'btn btn-danger'])?>
-            <?php else:?>
-                <br>
-                <?= Html::a('+', ['add-formula', 'id' => $q->id, 't' => 'question'], ['class' => 'btn btn-primary m-1'])?>
-            <?php endif;?>
-
-            <div class="d-flex">
-                <?= 'a. '?>
-                <?php if($q->answer1):?>
-                <?= $q->answer1;?>
-                <?php else:?>
-                    <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'answer1'])):?>
-                        <br>
-                        <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
-                             class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
-                        <?= Html::a('x', ['delete-formula', 'id' => $f->id, 'test_id' => $test->id],
-                            ['class' => 'btn btn-danger',
-                                'style' => [
-                                    'height' => '40px'
-                                ]])?>
-                    <?php else:?>
-                        <?= Html::a('+', ['add-formula', 'id' => $q->id, 't' => 'answer1'], ['class' => 'btn btn-primary m-1'])?>
-                    <?php endif;?>
-                <?php endif;?>
-            </div>
-            <div class="d-flex">
-                <?= 'b. '?>
-                <?php if($q->answer2):?>
-                    <?= $q->answer2;?>
-                <?php else:?>
-                    <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'answer2'])):?>
-                        <br>
-                        <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
-                             class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
-                        <?= Html::a('x', ['delete-formula', 'id' => $f->id, 'test_id' => $test->id],
-                            ['class' => 'btn btn-danger',
-                                'style' => [
-                                    'height' => '40px'
-                                ]])?>
-                    <?php else:?>
-                        <?= Html::a('+', ['add-formula', 'id' => $q->id, 't' => 'answer2'], ['class' => 'btn btn-primary m-1'])?>
-                    <?php endif;?>
-                <?php endif;?>
-            </div>
-            <div class="d-flex">
-                <?= 'c. '?>
-                <?php if($q->answer3):?>
-                    <?= $q->answer3;?>
-                <?php else:?>
-                    <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'answer3'])):?>
-                        <br>
-                        <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
-                             class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
-                        <?= Html::a('x', ['delete-formula', 'id' => $f->id, 'test_id' => $test->id],
-                            ['class' => 'btn btn-danger',
-                                'style' => [
-                                    'height' => '40px'
-                                ]])?>
-                    <?php else:?>
-                        <?= Html::a('+', ['add-formula', 'id' => $q->id, 't' => 'answer3'], ['class' => 'btn btn-primary m-1'])?>
-                    <?php endif;?>
-                <?php endif;?>
-            </div>
-            <div class="d-flex">
-                <?= 'd. '?>
-                <?php if($q->answer4):?>
-                    <?= $q->answer4;?>
-                <?php else:?>
-                    <?php if($f = Formula::findOne(['question_id' => $q->id, 'type' => 'answer4'])):?>
-                        <br>
-                        <img src="<?= Yii::getAlias('@web') . '/' . str_replace('/app/frontend/web/', '', $f->path) ?>"
-                             class="img-thumbnail shadow m-3" style="max-height: 200px; border: 1px solid black;">
-                        <?= Html::a('x', ['delete-formula', 'id' => $f->id, 'test_id' => $test->id],
-                            ['class' => 'btn btn-danger',
-                                'style' => [
-                                        'height' => '40px'
-                                ]])?>
-                    <?php else:?>
-                        <?= Html::a('+', ['add-formula', 'id' => $q->id, 't' => 'answer4'], ['class' => 'btn btn-primary m-1'])?>
-                    <?php endif;?>
-                <?php endif;?>
-            </div>
-        </div>
-        <br>
-
-
-    <?php endforeach; ?>
+            <br>
+            <?php
+            $answers = Answer::find()
+                ->andWhere(['question_id' => $q->id])
+                ->all();
+            $alphabet = range('A', 'Z'); // Array of alphabet letters
+            $index = 0; // Initialize index for letters
+            ?>
+            <?php foreach ($answers as $a): ?>
+                <?php if ($a->answer === $q->correct_answer): ?>
+                    <strong><?= $alphabet[$index++] . '. ' . $a->answer ?></strong><br>
+                <?php else: ?>
+                    <?= $alphabet[$index++] . '. ' . $a->answer ?><br>
+                <?php endif; ?>
+            <?php endforeach; ?>
+            <br>
+        <?php endforeach; ?>
+    </div>
 
     <div class="">
         <?= Html::a(Yii::t('app', 'Сақтау'),

@@ -14,12 +14,18 @@ use Yii;
  * @property string|null $status
  * @property string|null $start_time
  * @property string|null $end_time
+ * @property string|null $duration
  *
+ * @property File[] $files
  * @property Question[] $questions
+ * @property ResultPdf[] $resultPdfs
+ * @property Result[] $results
  * @property Subject $subject
  */
 class Test extends \yii\db\ActiveRecord
 {
+    public $file;
+
     /**
      * {@inheritdoc}
      */
@@ -34,10 +40,12 @@ class Test extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
+            [['subject_id', 'start_time', 'end_time', 'duration', 'title'], 'required'],
+
+            [['file'], 'file', 'skipOnEmpty' => false, 'extensions' => 'doc, docx'],
             [['subject_id'], 'integer'],
-            [['start_time', 'end_time'], 'safe'],
-            [['title', 'status'], 'string', 'max' => 255],
-            [['test'], 'string', 'max' => 10000],
+            [['start_time', 'end_time', 'duration'], 'safe'],
+            [['title', 'test', 'status'], 'string', 'max' => 255],
             [['subject_id'], 'exist', 'skipOnError' => true, 'targetClass' => Subject::class, 'targetAttribute' => ['subject_id' => 'id']],
         ];
     }
@@ -52,11 +60,21 @@ class Test extends \yii\db\ActiveRecord
             'subject_id' => Yii::t('app', 'Subject ID'),
             'title' => Yii::t('app', 'Title'),
             'test' => Yii::t('app', 'Test'),
-            'has_equation' => Yii::t('app', 'Has Equation'),
             'status' => Yii::t('app', 'Status'),
             'start_time' => Yii::t('app', 'Start Time'),
             'end_time' => Yii::t('app', 'End Time'),
+            'duration' => Yii::t('app', 'Duration'),
         ];
+    }
+
+    /**
+     * Gets query for [[Files]].
+     *
+     * @return \yii\db\ActiveQuery|\common\models\query\FileQuery
+     */
+    public function getFiles()
+    {
+        return $this->hasMany(File::class, ['test_id' => 'id']);
     }
 
     /**
@@ -67,6 +85,26 @@ class Test extends \yii\db\ActiveRecord
     public function getQuestions()
     {
         return $this->hasMany(Question::class, ['test_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[ResultPdfs]].
+     *
+     * @return \yii\db\ActiveQuery|\common\models\query\ResultPdfQuery
+     */
+    public function getResultPdfs()
+    {
+        return $this->hasMany(ResultPdf::class, ['test_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[Results]].
+     *
+     * @return \yii\db\ActiveQuery|\common\models\query\ResultQuery
+     */
+    public function getResults()
+    {
+        return $this->hasMany(Result::class, ['test_id' => 'id']);
     }
 
     /**

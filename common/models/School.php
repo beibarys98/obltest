@@ -31,6 +31,8 @@ class School extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
+            [['region_id', 'town', 'name'], 'required'], // Make all attributes required
+
             [['region_id'], 'integer'],
             [['town', 'name'], 'string', 'max' => 255],
             [['region_id'], 'exist', 'skipOnError' => true, 'targetClass' => Region::class, 'targetAttribute' => ['region_id' => 'id']],

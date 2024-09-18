@@ -2,16 +2,22 @@
 
 namespace frontend\controllers;
 
+use common\models\Answer;
 use common\models\File;
 use common\models\Formula;
+use common\models\Payment;
 use common\models\Question;
 use common\models\Result;
 use common\models\ResultPdf;
+use common\models\StartTime;
 use common\models\Teacher;
 use common\models\Test;
-use common\models\TestSearch;
 use DateTime;
+use DOMDocument;
+use DOMXPath;
 use kartik\mpdf\Pdf;
+use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpWord\Shared\ZipArchive;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\web\Controller;
@@ -79,7 +85,9 @@ class TestController extends Controller
             $test->status = 'finished';
             $test->save(false);
         }
-        $questions = Question::find()->andWhere(['test_id' => $id])->all();
+        $questions = Question::find()
+            ->andWhere(['test_id' => $id])
+            ->all();
 
         return $this->render('view', [
             'test' => $test,
@@ -95,31 +103,27 @@ class TestController extends Controller
             if ($model->load($this->request->post())) {
 
                 $model->status = 'new';
-                $model->save(false);
 
-                $lines = explode("\n", $model->test);
+                if (Yii::$app->request->isPost) {
+                    $model->file = UploadedFile::getInstance($model, 'file');
 
-                $number = 1;
-                foreach ($lines as $line) {
-                    $data = explode("\t", $line); // Split each line by tabs to get question and answers
+                    if ($model->validate()) {
+                        $filePath = 'uploads/'
+                            . Yii::$app->security->generateRandomString(8)
+                            . '.'. $model->file->extension;
 
-                    if (count($data) == 6) { // Ensure there are at least 5 elements (question, 4 answers, correct answer)
-                        $questionModel = new Question();
-                        $questionModel->test_id = $model->id;
-                        $questionModel->number = $number;
-                        $questionModel->question = trim($data[0]);
-                        $questionModel->answer1 = trim($data[1]);
-                        $questionModel->answer2 = trim($data[2]);
-                        $questionModel->answer3 = trim($data[3]);
-                        $questionModel->answer4 = trim($data[4]);
-                        $questionModel->correct_answer = trim($data[5]);
+                        // Save the file to the specified path
+                        if ($model->file->saveAs($filePath)) {
+                            $model->test = $filePath;
+                            $model->save(false);
 
-                        $questionModel->save();
+                            $linesArray = $this->parseWordDocument($filePath);
+                            $this->processAndStoreQuestions($linesArray, $model->id);
 
-                        $number++;
+                            return $this->redirect(['view', 'id' => $model->id]);
+                        }
                     }
                 }
-                return $this->redirect(['view', 'id' => $model->id]);
             }
         } else {
             $model->loadDefaultValues();
@@ -130,7 +134,161 @@ class TestController extends Controller
         ]);
     }
 
-    public function actionReady($id){
+    function parseWordDocument($filePath)
+    {
+        // Extract XML content from the .docx file
+        $zip = new ZipArchive;
+        if ($zip->open($filePath) === TRUE) {
+            $xmlContent = '';
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $entry = $zip->getNameIndex($i);
+                if (strpos($entry, 'word/document.xml') !== false) {
+                    $xmlContent = $zip->getFromIndex($i);
+                    break;
+                }
+            }
+            $zip->close();
+        }
+
+        // Load and parse XML content
+        $dom = new DOMDocument;
+        libxml_use_internal_errors(true);
+        $dom->loadXML($xmlContent);
+        libxml_clear_errors();
+
+        // Create XPath to find MathML elements
+        $xpath = new DOMXPath($dom);
+        $xpath->registerNamespace('m', 'http://schemas.openxmlformats.org/officeDocument/2006/math');
+
+        // Query for MathML elements and remove them
+        $nodes = $xpath->query('//m:*');
+        foreach ($nodes as $node) {
+            $node->parentNode->removeChild($node);
+        }
+
+        // Save the modified XML content
+        $modifiedXmlContent = $dom->saveXML();
+
+        // Repackage the .docx file with the updated XML content
+        $newFilePath = 'uploads/' . Yii::$app->security->generateRandomString(8) . '.docx';
+        $newZip = new ZipArchive;
+        if ($newZip->open($newFilePath, ZipArchive::CREATE) === TRUE) {
+            $newZip->addFromString('word/document.xml', $modifiedXmlContent);
+
+            // Add other necessary files from the original .docx
+            $zip = new ZipArchive;
+            if ($zip->open($filePath) === TRUE) {
+                for ($i = 0; $i < $zip->numFiles; $i++) {
+                    $entry = $zip->getNameIndex($i);
+                    if ($entry !== 'word/document.xml') {
+                        $newZip->addFromString($entry, $zip->getFromIndex($i));
+                    }
+                }
+                $zip->close();
+            }
+
+            $newZip->close();
+        }
+
+        $phpWord = IOFactory::load($newFilePath);
+        $lines = [];
+
+        // Loop through each section in the document
+        foreach ($phpWord->getSections() as $section) {
+            // Loop through each element in the section
+            foreach ($section->getElements() as $element) {
+                if ($element instanceof \PhpOffice\PhpWord\Element\TextRun) {
+                    $textLine = '';
+                    $isBold = false;
+
+                    // Process each element within the TextRun
+                    foreach ($element->getElements() as $textElement) {
+                        if ($textElement instanceof \PhpOffice\PhpWord\Element\Text) {
+                            // Check if the text is bold by accessing the font style
+                            $fontStyle = $textElement->getFontStyle();
+                            if ($fontStyle && $fontStyle->isBold()) {
+                                $isBold = true;
+                            }
+
+                            // Concatenate the text to form the full line
+                            $textLine .= $textElement->getText();
+                        } elseif ($textElement instanceof \PhpOffice\PhpWord\Element\TextRun) {
+                            // Process nested TextRun elements
+                            foreach ($textElement->getElements() as $nestedTextElement) {
+                                if ($nestedTextElement instanceof \PhpOffice\PhpWord\Element\Text) {
+                                    // Check if the text is bold by accessing the font style
+                                    $fontStyle = $nestedTextElement->getFontStyle();
+                                    if ($fontStyle && $fontStyle->isBold()) {
+                                        $isBold = true;
+                                    }
+
+                                    // Concatenate the text to form the full line
+                                    $textLine .= $nestedTextElement->getText();
+                                }
+                            }
+                        }
+                    }
+
+                    // Add the text line with bold information to the array
+                    $lines[] = [
+                        'text' => $textLine,
+                        'isBold' => $isBold
+                    ];
+                } elseif ($element instanceof \PhpOffice\PhpWord\Element\Text) {
+                    // Handle cases where the element is a single text element
+                    $fontStyle = $element->getFontStyle();
+                    $isBold = $fontStyle && $fontStyle->isBold();
+
+                    $lines[] = [
+                        'text' => $element->getText(),
+                        'isBold' => $isBold
+                    ];
+                }
+            }
+        }
+
+        return $lines;
+    }
+
+    public function processAndStoreQuestions($linesArray, $test_id)
+    {
+        $currentQuestion = null;
+        foreach ($linesArray as $lineData) {
+            $lineText = $lineData['text'];
+            $isBold = $lineData['isBold'];
+
+            // Check if the line is a question (e.g., starts with a number and a dot)
+            if (preg_match('/^\s*\d+\.\s*(.+)$/u', $lineText, $matches)) {
+
+                // Create a new question
+                $currentQuestion = new Question();
+                $currentQuestion->test_id = $test_id;
+                $currentQuestion->question = $matches[1];
+                $currentQuestion->correct_answer = ''; // Set this later if needed
+
+                $currentQuestion->save();
+
+            } elseif (preg_match('/^\s*[a-zA-Zа-яА-ЯёЁ]\s*[.)]\s*(.+)$/u', $lineText, $matches)) {
+                // This is an answer
+                if ($currentQuestion !== null) {
+                    $answerText = $matches[1];
+                    $answer = new Answer();
+                    $answer->question_id = $currentQuestion->id; // Must save the question first
+                    $answer->answer = $answerText;
+                    $answer->save();
+
+                    // Check if the first symbol of the answer is bold
+                    if ($isBold) {
+                        $currentQuestion->correct_answer = $answer->id;
+                        $currentQuestion->save(false);
+                    }
+                }
+            }
+        }
+    }
+
+    public function actionReady($id): \yii\web\Response
+    {
         $test = Test::findOne($id);
         $test->status = 'ready';
         $test->save(false);
@@ -221,7 +379,7 @@ class TestController extends Controller
 
     public function certificate($teacher, $test, $place)
     {
-        $imgPath = Yii::getAlias("@webroot/certificates/certificate{$place}.jpeg");
+        $imgPath = Yii::getAlias("@webroot/certificates/template/certificate{$place}.jpeg");
         $image = imagecreatefromjpeg($imgPath);
         $textColor = imagecolorallocate($image, 0, 0, 0);
         $textColor2 = imagecolorallocate($image, 43, 56, 98);
@@ -262,34 +420,46 @@ class TestController extends Controller
         ]);
     }
 
-    public function actionAddFormula($id, $t){
-        $question = Question::findOne($id);
-        $formula = new Formula();
+    public function actionAddFormula($id, $type){
 
-        if (Yii::$app->request->isPost) {
-            $file = UploadedFile::getInstance($formula, 'file');
-            $filePath = Yii::getAlias('@web') .'formulas/'
-                . Yii::$app->security->generateRandomString(8) . '.' . $file->extension;
-            if ($file->saveAs($filePath)) {
-                $formula->question_id = $id;
-                $formula->type = $t;
-                $formula->path = $filePath;
-                $formula->save(false);
-                return $this->redirect(['formula', 'id' => $question->test_id]);
-            }
+        if($type == 'question'){
+            $model = Question::findOne($id);
+            $tid = $model->test_id;
+        }else{
+            $model = Answer::findOne($id);
+            $tid = $model->question->test_id;
         }
 
+        if ($this->request->isPost) {
+            if ($model->load($this->request->post())) {
+                if (Yii::$app->request->isPost) {
+                    $model->file = UploadedFile::getInstance($model, 'file');
+
+                    if ($model->validate()) {
+                        $filePath = 'formulas/'
+                            . Yii::$app->security->generateRandomString(8)
+                            . '.'. $model->file->extension;
+
+                        // Save the file to the specified path
+                        if ($model->file->saveAs($filePath)) {
+                            $model->formula = $filePath;
+                            $model->save(false);
+
+                            return $this->redirect(['view', 'id' => $tid]);
+                        }
+                    }
+                }
+            }
+        } else {
+            $model->loadDefaultValues();
+        }
         return $this->render('add-formula', [
-            'question' => $question,
-            'type' => $t,
-            'formula' => $formula,
+            'model' => $model
         ]);
     }
 
     public function actionDeleteFormula($id, $test_id){
-        $formula = Formula::findOne($id);
-        unlink($formula->path);
-        $formula->delete();
+
         return $this->redirect(['formula', 'id' => $test_id]);
     }
 
@@ -330,20 +500,54 @@ class TestController extends Controller
     {
         $test = Test::findOne($id);
         $questions = Question::find()->where(['test_id' => $id])->all();
+        $resultPdf = ResultPdf::findOne(['test_id' => $id]);
+        $payments = Payment::find()->andWhere(['test_id' => $id])->all();
+        $startTimes = StartTime::find()->andWhere(['test_id' => $id])->all();
+
         foreach ($questions as $question) {
-            $formulas = Formula::find()->andWhere(['question_id' => $question->id])->all();
-            foreach ($formulas as $formula){
-                unlink($formula->path);
-                $formula->delete();
+            // Fetch associated answers
+            $answers = Answer::find()->andWhere(['question_id' => $question->id])->all();
+
+            // Delete each associated answer
+            foreach ($answers as $a) {
+                $a->delete();
             }
-            $question->delete();
+
+            // Attempt to delete the associated file if it exists
+            if (isset($question->formula) && file_exists($question->formula)) {
+                if (unlink($question->formula)) {
+                    // Delete the question record
+                    $question->delete();
+                }
+            }
         }
-        $results = Result::find()->andWhere(['test_id' => $id])->all();
-        foreach ($results as $result){
-            $result->delete();
+
+        // Check if $resultPdf exists and the file path is valid
+        if (isset($resultPdf) && file_exists($resultPdf->path)) {
+            // Attempt to delete the file
+            if (unlink($resultPdf->path)) {
+                // File deleted successfully, now delete the record
+                $resultPdf->delete();
+            }
         }
-        $test->status = 'deleted';
-        $test->save(false);
+
+        // Loop through each payment to delete associated files and records
+        foreach ($payments as $payment) {
+            // Check if the file exists before attempting to delete
+            if (file_exists($payment->payment)) {
+                // Attempt to delete the file
+                if (unlink($payment->payment)) {
+                    // File deleted successfully, now delete the record
+                    $payment->delete();
+                }
+            }
+        }
+
+        foreach ($startTimes as $startTime) {
+            $startTime->delete();
+        }
+
+        $test->delete();
 
         return $this->redirect(['index']);
     }

@@ -15,7 +15,9 @@ $this->title = Yii::t('app', 'Жаңа тест');
 
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <?php $form = ActiveForm::begin(); ?>
+    <?php $form = ActiveForm::begin([
+        'options' => ['enctype' => 'multipart/form-data']
+    ]); ?>
 
     <?= $form->field($model, 'title')->textInput(['maxlength' => true])->label('Атауы') ?>
 
@@ -27,7 +29,7 @@ $this->title = Yii::t('app', 'Жаңа тест');
         $subjects,
         ['prompt' => 'Пән таңдаңыз'])->label('Пән') ?>
 
-    <?= $form->field($model, 'test')->textarea(['rows' => 7])->label('Тест') ?>
+    <?= $form->field($model, 'file')->input('file', ['class' => 'form-control'])->label('Тест') ?>
 
     <?= $form->field($model, 'start_time')->widget(DateTimePicker::classname(), [
         'options' => ['placeholder' => 'Күнін және уақытын таңдаңыз'],
@@ -36,7 +38,7 @@ $this->title = Yii::t('app', 'Жаңа тест');
             'format' => 'yyyy-mm-dd hh:ii',
             'todayHighlight' => true
         ]
-    ])->label('Басталуы');?>
+    ])->label('Ашылуы');?>
     <?= $form->field($model, 'end_time')->widget(DateTimePicker::classname(), [
         'options' => ['placeholder' => 'Күнін және уақытын таңдаңыз'],
         'pluginOptions' => [
@@ -44,7 +46,12 @@ $this->title = Yii::t('app', 'Жаңа тест');
             'format' => 'yyyy-mm-dd hh:ii',
             'todayHighlight' => true
         ]
-    ])->label('Аяқталуы');?>
+    ])->label('Жабылуы');?>
+
+    <div style="width: 120px;">
+        <?= $form->field($model, 'duration')->input('time')->label('Узақтығы');?>
+    </div>
+
 
     <div class="form-group mt-3">
         <?= Html::submitButton(Yii::t('app', 'Сақтау'), ['class' => 'btn btn-success']) ?>

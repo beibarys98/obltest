@@ -9,8 +9,10 @@ use Yii;
  *
  * @property int $id
  * @property string $subject
+ * @property string|null $subject_ru
  *
  * @property Teacher[] $teachers
+ * @property Test[] $tests
  */
 class Subject extends \yii\db\ActiveRecord
 {
@@ -29,7 +31,7 @@ class Subject extends \yii\db\ActiveRecord
     {
         return [
             [['subject'], 'required'],
-            [['subject'], 'string', 'max' => 255],
+            [['subject', 'subject_ru'], 'string', 'max' => 255],
         ];
     }
 
@@ -41,6 +43,7 @@ class Subject extends \yii\db\ActiveRecord
         return [
             'id' => Yii::t('app', 'ID'),
             'subject' => Yii::t('app', 'Subject'),
+            'subject_ru' => Yii::t('app', 'Subject Ru'),
         ];
     }
 
@@ -52,6 +55,16 @@ class Subject extends \yii\db\ActiveRecord
     public function getTeachers()
     {
         return $this->hasMany(Teacher::class, ['subject_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[Tests]].
+     *
+     * @return \yii\db\ActiveQuery|\common\models\query\TestQuery
+     */
+    public function getTests()
+    {
+        return $this->hasMany(Test::class, ['subject_id' => 'id']);
     }
 
     /**

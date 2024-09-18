@@ -1,0 +1,64 @@
+<?php
+/** @var yii\web\View $this */
+/** @var $teacher*/
+/** @var $purpose*/
+/** @var $payment*/
+
+use yii\bootstrap5\ActiveForm;
+use yii\helpers\Html;
+
+?>
+
+    <div style="text-align: center;">
+        <img src="/images/qr.jpg" alt="" width="200px;" style="border: 1px solid black; border-radius: 10px;" class="shadow p-1">
+    </div>
+    <br>
+    <div style="width: 400px; margin: 0 auto;">
+        <div class="shadow p-3" style="border: 1px solid black; border-radius: 10px;" >
+            <label for="name">ФИО учащегося</label>
+            <br>
+            <input id="name" type="text" value="<?= $teacher->name ?>" class="w-100" disabled>
+            <br>
+            <label for="name">Назначение платежа</label>
+            <br>
+            <input id="name" type="text" value="<?= $purpose->purpose ?>" class="w-100" disabled>
+            <br>
+            <label for="name">Сумма</label>
+            <br>
+            <input id="name" type="text" value="<?= $purpose->cost ?>" class="w-100" disabled>
+        </div>
+        <br>
+        <?php
+        $form = ActiveForm::begin([
+            'options' => ['enctype' => 'multipart/form-data'],
+        ]); ?>
+
+        <div class="shadow p-3" style="border: 1px solid black; border-radius: 10px;" >
+            <?= $form->field($payment, 'file')->fileInput()->label('Квитанция') ?>
+            <?= Html::submitButton(Yii::t('app', 'Загрузить'), ['class' => 'btn btn-primary']) ?>
+        </div>
+
+        <?php ActiveForm::end(); ?>
+
+        <br>
+
+        <div class="accordion shadow" style="font-size: 24px;">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                        <?= Yii::t('app', 'Инструкция') ?>
+                    </button>
+                </h2>
+                <div class="accordion-collapse collapse" id="collapseOne">
+                    <div class="accordion-body">
+
+                        1) <?= Yii::t('app', 'Отправьте квитанцию себе на WhatsApp') ?>. <br>
+                        2) <?= Yii::t('app', 'Нажмите на эту ссылку') ?> <a href="https://web.whatsapp.com" target="_blank">web.whatsapp.com</a>. <br>
+                        3) <?= Yii::t('app', 'Скачайте квитанцию в папку "Загрузки"') ?>. <br>
+                        4) <?= Yii::t('app', 'Выберите файл и нажмите "Загрузить"') ?>.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+

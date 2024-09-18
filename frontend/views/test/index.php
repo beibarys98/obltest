@@ -13,11 +13,11 @@ use yii\widgets\Pjax;
 /** @var yii\data\ActiveDataProvider $dataProvider3 */
 /** @var yii\data\ActiveDataProvider $dataProvider4 */
 
-$this->title = Yii::t('app', 'Тесттер');
+$this->title = Yii::$app->name;
 ?>
 <div class="test-index">
 
-    <h1><?= Html::encode($this->title) ?></h1>
+    <h1>Тесттер</h1>
 
     <p>
         <?= Html::a(Yii::t('app', 'Жаңа тест'), ['create'], ['class' => 'btn btn-success']) ?>
@@ -38,30 +38,22 @@ $this->title = Yii::t('app', 'Тесттер');
                 'showHeader' => false,
                 'columns' => [
                     [
-                        'attribute' => 'title',
-                        'label' => 'Атауы',
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::a($model->title, ['view', 'id' => $model->id]);
                         },
                     ],
                     [
-                        'attribute' => 'subject_id',
                         'value' => 'subject.subject',
-                        'label' => 'Пән'
                     ],
                     [
-                        'attribute' => 'start_time',
-                        'label' => 'Басталуы',
+                        'format' => 'raw',
                         'value' => function ($model) {
-                            return date('d/m H:i', strtotime($model->start_time)); // Short month name
-                        },
-                    ],
-                    [
-                        'attribute' => 'end_time',
-                        'label' => 'Аяқталуы',
-                        'value' => function ($model) {
-                            return date('d/m H:i', strtotime($model->start_time)); // Short month name
+                            return nl2br(
+                                date('d/m H:i', strtotime($model->start_time)) . "<br>" .
+                                date('d/m H:i', strtotime($model->end_time)) . "<br>" .
+                                date('H:i:s', strtotime($model->duration))
+                            );
                         },
                     ],
                 ],
@@ -77,30 +69,22 @@ $this->title = Yii::t('app', 'Тесттер');
                 'showHeader' => false,
                 'columns' => [
                     [
-                        'attribute' => 'title',
-                        'label' => 'Атауы',
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::a($model->title, ['view', 'id' => $model->id]);
                         },
                     ],
                     [
-                        'attribute' => 'subject_id',
                         'value' => 'subject.subject',
-                        'label' => 'Пән'
                     ],
                     [
-                        'attribute' => 'start_time',
-                        'label' => 'Басталуы',
+                        'format' => 'raw',
                         'value' => function ($model) {
-                            return date('d/m H:i', strtotime($model->start_time)); // Short month name
-                        },
-                    ],
-                    [
-                        'attribute' => 'end_time',
-                        'label' => 'Аяқталуы',
-                        'value' => function ($model) {
-                            return date('d/m H:i', strtotime($model->start_time)); // Short month name
+                            return nl2br(
+                                date('d/m H:i', strtotime($model->start_time)) . "<br>" .
+                                date('d/m H:i', strtotime($model->end_time)) . "<br>" .
+                                date('H:i:s', strtotime($model->duration))
+                            );
                         },
                     ],
                 ],
@@ -116,30 +100,22 @@ $this->title = Yii::t('app', 'Тесттер');
                 'showHeader' => false,
                 'columns' => [
                     [
-                        'attribute' => 'title',
-                        'label' => 'Атауы',
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::a($model->title, ['view', 'id' => $model->id]);
                         },
                     ],
                     [
-                        'attribute' => 'subject_id',
                         'value' => 'subject.subject',
-                        'label' => 'Пән'
                     ],
                     [
-                        'attribute' => 'start_time',
-                        'label' => 'Басталуы',
+                        'format' => 'raw',
                         'value' => function ($model) {
-                            return date('d/m H:i', strtotime($model->start_time)); // Short month name
-                        },
-                    ],
-                    [
-                        'attribute' => 'end_time',
-                        'label' => 'Аяқталуы',
-                        'value' => function ($model) {
-                            return date('d/m H:i', strtotime($model->end_time)); // Short month name
+                            return nl2br(
+                                date('d/m H:i', strtotime($model->start_time)) . "<br>" .
+                                date('d/m H:i', strtotime($model->end_time)) . "<br>" .
+                                date('H:i:s', strtotime($model->duration))
+                            );
                         },
                     ],
                 ],
@@ -154,7 +130,6 @@ $this->title = Yii::t('app', 'Тесттер');
         <?= GridView::widget([
             'dataProvider' => $dataProvider4,
             'layout' => "{items}",
-            'showHeader' => false,
             'columns' => [
                 [
                     'attribute' => 'title',
@@ -171,17 +146,32 @@ $this->title = Yii::t('app', 'Тесттер');
                 ],
                 [
                     'attribute' => 'start_time',
-                    'label' => 'Басталуы',
+                    'label' => 'Ашылуы',
                     'value' => function ($model) {
                         return date('d/m H:i', strtotime($model->start_time)); // Short month name
                     },
                 ],
                 [
                     'attribute' => 'end_time',
-                    'label' => 'Аяқталуы',
+                    'label' => 'Жабылуы',
                     'value' => function ($model) {
                         return date('d/m H:i', strtotime($model->end_time)); // Short month name
                     },
+                ],
+                [
+                    'attribute' => 'duration',
+                    'label' => 'Узақтығы',
+                    'value' => function ($model) {
+                        return date('H:i:s', strtotime($model->duration)); // Short month name
+                    },
+                ],
+                [
+                    'attribute' => 'id',
+                    'label' => 'Файл',
+                    'format' => 'raw',
+                    'value' => function ($model) {
+                        return Html::a('Нәтиже.pdf', Url::to(['test/result', 'id' => $model->id]), ['data-pjax' => 0]);
+                    }
                 ],
             ],
         ]); ?>

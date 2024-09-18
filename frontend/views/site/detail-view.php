@@ -13,6 +13,7 @@ use yii\widgets\DetailView;
 /** @var $report*/
 /** @var $certificate*/
 /** @var $isActive*/
+/** @var $hasPaid*/
 
 $this->title = $test->title;
 \yii\web\YiiAsset::register($this);
@@ -20,17 +21,26 @@ $this->title = $test->title;
 <div class="test-view">
 
     <p>
-        <?= Html::a(
-            Yii::t('app', 'Бастау'),
-            ['view', 'id' => $test->id],
-            [
-                'class' => $isActive ? 'btn btn-success active' : 'btn btn-success disabled',
-                'data' => [
-                    'confirm' => Yii::t('app', 'Сенімдісіз бе?'),
-                    'method' => 'post',
-                ],
-            ]
-        ) ?>
+        <?php
+        $isActive ? $class = 'active' : $class = 'disabled';
+        if(!$hasPaid){
+            echo Html::a(
+                Yii::t('app', 'Оплатить'),
+                ['payment/pay', 'id' => $test->id],
+                ['class' => 'btn btn-primary '.$class]);
+        }else{
+            echo Html::a(
+                Yii::t('app', 'Начать'),
+                ['view', 'id' => $test->id],
+                [
+                    'class' => 'btn btn-success active '.$class,
+                    'data' => [
+                        'confirm' => Yii::t('app', 'Вы уверены?'),
+                        'method' => 'post',
+                    ],
+                ]);
+        }
+        ?>
     </p>
 
     <?= DetailView::widget([
@@ -38,36 +48,51 @@ $this->title = $test->title;
         'attributes' => [
             [
                 'attribute' => 'title',
-                'label' => 'Атауы'
+                'label' => Yii::t('app', 'Заголовок')
             ],
             [
-                'attribute' => 'subject.subject',
-                'label' => 'Пән'
+                'attribute' => 'subject',
+                'label' => Yii::t('app', 'Предмет'),
+                'value' => function($model) {
+                    // Check the current application language
+                    if (Yii::$app->language === 'ru-RU') {
+                        return $model->subject->subject_ru; // Show subject in Russian
+                    } else {
+                        return $model->subject->subject; // Show subject in Kazakh
+                    }
+                },
             ],
             [
                 'attribute' => 'start_time',
-                'label' => 'Басталуы',
+                'label' => Yii::t('app', 'Открытие'),
                 'value' => function ($model) {
                     return date('d/m H:i', strtotime($model->start_time)); // Short month name
                 },
             ],
             [
                 'attribute' => 'end_time',
-                'label' => 'Аяқталуы',
+                'label' => Yii::t('app', 'Закрытие'),
                 'value' => function ($model) {
                     return date('d/m H:i', strtotime($model->end_time)); // Short month name
+                },
+            ],
+            [
+                'attribute' => 'duration',
+                'label' => Yii::t('app', 'Длительность'),
+                'value' => function ($model) {
+                    return date('H:i:s', strtotime($model->duration)); // Short month name
                 },
             ],
         ],
     ]) ?>
 
     <?= GridView::widget([
-        'dataProvider' => $report,
+        'dataProvider' => $test->status == 'finished' ? $report : new \yii\data\ArrayDataProvider(),
         'layout' => "{items}",
+        'showHeader' => false,
         'columns' => [
             [
                 'attribute' => 'path',
-                'label' => 'Қатемен жұмыс',
                 'format' => 'raw',
                 'value' => function ($model) {
                     return Html::a('Қатемен жұмыс',
@@ -80,10 +105,10 @@ $this->title = $test->title;
     <?= GridView::widget([
         'dataProvider' => $certificate,
         'layout' => "{items}",
+        'showHeader' => false,
         'columns' => [
             [
                 'attribute' => 'path',
-                'label' => 'Сертификат',
                 'format' => 'raw',
                 'value' => function ($model) {
                     return Html::a('Сертификат',

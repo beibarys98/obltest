@@ -9,7 +9,10 @@ $params = array_merge(
 return [
     'language' => 'kz',
     'timezone' => 'Asia/Almaty',
-    'name' => 'Obl Test',
+    'name' => 'Актюбинский областной методический центр',
+    'on beforeRequest' => function ($event) {
+        Yii::$app->language = Yii::$app->session->get('language', 'kz-KZ');
+    },
 
     'id' => 'app-frontend',
     'basePath' => dirname(__DIR__),

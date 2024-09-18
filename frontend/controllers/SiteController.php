@@ -2,9 +2,12 @@
 
 namespace frontend\controllers;
 
+use Cassandra\Time;
 use common\models\Certificate;
 use common\models\File;
+use common\models\Payment;
 use common\models\Result;
+use common\models\StartTime;
 use DateTime;
 use Imagine\Gd\Imagine;
 use Imagine\Image\Palette\RGB;
@@ -20,6 +23,7 @@ use Mpdf\Mpdf;
 use Yii;
 use yii\base\InvalidArgumentException;
 use yii\data\ActiveDataProvider;
+use yii\db\Expression;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
@@ -62,7 +66,6 @@ class SiteController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'logout' => ['post'],
-                    'refresh-time' => ['post'],
                 ],
             ],
         ];
@@ -104,7 +107,7 @@ class SiteController extends Controller
         $test = new ActiveDataProvider([
             'query' => Test::find()
                 ->andWhere(['subject_id' => $teacher->subject_id])
-                ->andWhere(['status' => ['public', 'finished', 'deleted']]),
+                ->andWhere(['status' => ['public', 'finished']]),
         ]);
 
         return $this->render('index', [
@@ -115,11 +118,27 @@ class SiteController extends Controller
     public function actionView($id)
     {
         $test = Test::findOne($id);
-        $questions = Question::find()->andWhere(['test_id' => $id])->all();
+        $questions = Question::find()
+            ->andWhere(['test_id' => $id])
+            ->orderBy(new Expression('RAND()'))
+            ->all();
+
+        $startTime = StartTime::find()
+            ->andWhere(['teacher_id' => Teacher::findOne(['user_id' => Yii::$app->user->id])->id])
+            ->andWhere(['test_id' => $id])
+            ->one();
+        if(!$startTime){
+            $startTime = new StartTime();
+            $startTime->teacher_id = Teacher::findOne(['user_id' => Yii::$app->user->id])->id;
+            $startTime->test_id = $id;
+            $startTime->start_time = (new \DateTime())->format('Y-m-d H:i:s'); // Use PHP DateTime to get the current time in the correct format
+            $startTime->save();
+        }
 
         return $this->render('view', [
             'test' => $test,
             'questions' => $questions,
+            'startTime' => $startTime,
         ]);
     }
 
@@ -150,13 +169,19 @@ class SiteController extends Controller
             ->exists();
 
         $isActive = $now >= $startTime && $now<= $endTime
-            && !$hasFile && $test->status == 'public';
+            && $test->status == 'public' && !$hasFile;
+
+        $hasPaid = Payment::find()
+            ->andWhere(['teacher_id' => $teacher->id])
+            ->andWhere(['test_id' => $id])
+            ->one();
 
         return $this->render('detail-view', [
             'test' => Test::findOne($id),
             'report' => $report,
             'certificate' => $certificate,
             'isActive' => $isActive,
+            'hasPaid' => $hasPaid
         ]);
     }
 
@@ -168,16 +193,14 @@ class SiteController extends Controller
             $postData = Yii::$app->request->post('answers', []);
             $teacher = Teacher::findOne(['user_id' => Yii::$app->user->id]);
 
-            foreach ($questions as $q) {
-                if (!isset($postData[$q->id])) {
-                    $postData[$q->id] = '';
-                }
-            }
-
             //save results in db
             $score = 0;
-            foreach($questions as $q){
-                if ($postData[$q->id] == $q->correct_answer) {
+            foreach ($questions as $q) {
+                // Get the answer from the post data or set it to an empty string if not set
+                $userAnswer = isset($postData[$q->id]) ? $postData[$q->id] : '';
+
+                // Check if the user's answer matches the correct answer
+                if ($userAnswer == $q->correct_answer) {
                     $score++;
                 }
             }
@@ -308,7 +331,8 @@ class SiteController extends Controller
             && $model2->load(Yii::$app->request->post())
             && $model->signup($model2)) {
 
-            Yii::$app->session->setFlash('success', 'Сіз тіркелдіңіз!');
+            Yii::$app->session->setFlash('success', Yii::t('app', 'Регистрация прошла успешно!'));
+            $model2->save(false);
             return $this->goHome();
         }
 
@@ -409,5 +433,15 @@ class SiteController extends Controller
         return $this->render('resendVerificationEmail', [
             'model' => $model
         ]);
+    }
+
+    public function actionLanguage($view)
+    {
+        if(Yii::$app->language == 'kz-KZ'){
+            Yii::$app->session->set('language', 'ru-RU');
+        }else{
+            Yii::$app->session->set('language', 'kz-KZ');
+        }
+        return $this->redirect([$view]);
     }
 }
