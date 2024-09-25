@@ -7,7 +7,7 @@
 use yii\bootstrap5\Html;
 use yii\bootstrap5\ActiveForm;
 
-$this->title = Yii::$app->name;
+$this->title = Yii::t('app', Yii::$app->name)
 ?>
 <div class="site-login">
     <h1><?= Yii::t('app', 'Войти')?></h1>

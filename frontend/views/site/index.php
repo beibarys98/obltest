@@ -6,7 +6,7 @@
 use yii\bootstrap5\Html;
 use yii\grid\GridView;
 
-$this->title = Yii::$app->name;
+$this->title = Yii::t('app', Yii::$app->name)
 ?>
 <div class="site-index">
     <?= GridView::widget([

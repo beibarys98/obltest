@@ -4,7 +4,6 @@ namespace frontend\controllers;
 
 use common\models\Answer;
 use common\models\File;
-use common\models\Formula;
 use common\models\Payment;
 use common\models\Question;
 use common\models\Result;
@@ -384,19 +383,8 @@ class TestController extends Controller
         $textColor = imagecolorallocate($image, 0, 0, 0);
         $textColor2 = imagecolorallocate($image, 43, 56, 98);
         $fontPath = '/app/frontend/fonts/times.ttf';
-        imagettftext($image, 24, 0, 525, 585, $textColor, $fontPath, $teacher->name);
-        imagettftext($image, 24, 0, 450, 450, $textColor2, $fontPath, $teacher->subject->subject);
-        $month = date('n');
-        $year = date('Y');
-        $months = [
-            1 => 'қаңтар', 2 => 'ақпан', 3 => 'наурыз',
-            4 => 'сәуір', 5 => 'мамыр', 6 => 'маусым',
-            7 => 'шілде', 8 => 'тамыз', 9 => 'қыркүйек',
-            10 => 'қазан', 11 => 'қараша', 12 => 'желтоқсан',
-        ];
-        $monthName = $months[$month];
-        $dateText = $monthName . ' ' . $year . ' жыл';
-        imagettftext($image, 16, 0, 650, 830, $textColor2, $fontPath, $dateText);
+        imagettftext($image, 32, 0, 900, 775, $textColor2, $fontPath, $teacher->subject->subject);
+        imagettftext($image, 32, 0, 875, 975, $textColor, $fontPath, $teacher->name);
         $newPath = Yii::getAlias('@webroot/certificates/')
             . Yii::$app->security->generateRandomString(8)
             . '.jpeg';
@@ -499,10 +487,17 @@ class TestController extends Controller
     public function actionDelete($id)
     {
         $test = Test::findOne($id);
+        $files = File::find()->andWhere(['test_id' => $id])->all();
         $questions = Question::find()->where(['test_id' => $id])->all();
-        $resultPdf = ResultPdf::findOne(['test_id' => $id]);
         $payments = Payment::find()->andWhere(['test_id' => $id])->all();
+        $results = Result::find()->andWhere(['test_id' => $id])->all();
         $startTimes = StartTime::find()->andWhere(['test_id' => $id])->all();
+
+        foreach ($files as $file) {
+            if(unlink($file->path)){
+                $file->delete();
+            }
+        }
 
         foreach ($questions as $question) {
             // Fetch associated answers
@@ -514,21 +509,7 @@ class TestController extends Controller
             }
 
             // Attempt to delete the associated file if it exists
-            if (isset($question->formula) && file_exists($question->formula)) {
-                if (unlink($question->formula)) {
-                    // Delete the question record
-                    $question->delete();
-                }
-            }
-        }
-
-        // Check if $resultPdf exists and the file path is valid
-        if (isset($resultPdf) && file_exists($resultPdf->path)) {
-            // Attempt to delete the file
-            if (unlink($resultPdf->path)) {
-                // File deleted successfully, now delete the record
-                $resultPdf->delete();
-            }
+            $question->delete();
         }
 
         // Loop through each payment to delete associated files and records
@@ -543,11 +524,17 @@ class TestController extends Controller
             }
         }
 
+        foreach ($results as $result) {
+            $result->delete();
+        }
+
         foreach ($startTimes as $startTime) {
             $startTime->delete();
         }
 
-        $test->delete();
+        if(unlink($test->test)){
+            $test->delete();
+        }
 
         return $this->redirect(['index']);
     }

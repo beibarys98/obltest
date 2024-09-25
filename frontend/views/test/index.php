@@ -13,7 +13,7 @@ use yii\widgets\Pjax;
 /** @var yii\data\ActiveDataProvider $dataProvider3 */
 /** @var yii\data\ActiveDataProvider $dataProvider4 */
 
-$this->title = Yii::$app->name;
+$this->title = Yii::t('app', Yii::$app->name)
 ?>
 <div class="test-index">
 

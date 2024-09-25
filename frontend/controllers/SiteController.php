@@ -2,16 +2,11 @@
 
 namespace frontend\controllers;
 
-use Cassandra\Time;
-use common\models\Certificate;
+use common\models\Answer;
 use common\models\File;
 use common\models\Payment;
 use common\models\Result;
 use common\models\StartTime;
-use DateTime;
-use Imagine\Gd\Imagine;
-use Imagine\Image\Palette\RGB;
-use Imagine\Image\Point;
 use common\models\Admin;
 use common\models\Question;
 use common\models\Teacher;
@@ -19,7 +14,6 @@ use common\models\Test;
 use frontend\models\ResendVerificationEmailForm;
 use frontend\models\VerifyEmailForm;
 use kartik\mpdf\Pdf;
-use Mpdf\Mpdf;
 use Yii;
 use yii\base\InvalidArgumentException;
 use yii\data\ActiveDataProvider;
@@ -200,7 +194,7 @@ class SiteController extends Controller
                 $userAnswer = isset($postData[$q->id]) ? $postData[$q->id] : '';
 
                 // Check if the user's answer matches the correct answer
-                if ($userAnswer == $q->correct_answer) {
+                if ($userAnswer == Answer::findOne($q->correct_answer)->answer) {
                     $score++;
                 }
             }

@@ -1,10 +1,8 @@
 <?php
 
 use common\models\Answer;
-use common\models\Formula;
 use yii\helpers\Html;
 use yii\helpers\Url;
-use yii\widgets\DetailView;
 
 /** @var yii\web\View $this */
 /** @var common\models\Test $test */
@@ -37,7 +35,7 @@ $this->title = $test->title;
             ?>
             <?php foreach ($answersModel as $a): ?>
                 <?php
-                $isCorrect = $a->answer == $q->correct_answer;
+                $isCorrect = $a->answer == Answer::findOne($q->correct_answer)->answer;
                 $isUserAnswer = isset($answers[$q->id]) && $answers[$q->id] == $a->answer;
                 $color = '';
 
@@ -52,8 +50,15 @@ $this->title = $test->title;
                 }
                 ?>
                 <span style="<?= $color ?>">
-                <?= $alphabet[$index++] . '. ' . htmlspecialchars($a->answer) ?>
-            </span>
+                    <?php if ($a->formula): ?>
+                        <!-- Display the formula image if it exists for the answer -->
+                        <?= $alphabet[$index++] . '. ' ?>
+                        <?= Html::img(Url::to('@web/' . $a->formula)) ?>
+                    <?php else: ?>
+                        <!-- Display the answer text if no formula exists -->
+                        <?= $alphabet[$index++] . '. ' . Html::encode($a->answer); ?>
+                    <?php endif; ?>
+                </span>
                 <br>
             <?php endforeach; ?>
             <br>

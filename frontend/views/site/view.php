@@ -83,7 +83,7 @@ $this->registerJs("
             <?= $number++ . '. '; ?>
             <?php if ($q->formula): ?>
                 <!-- Display the formula image if it exists -->
-                <?= Html::img(Url::to('@web/' . $q->formula), ['style' => 'max-width: 100px;']) ?>
+                <?= Html::img(Url::to('@web/' . $q->formula)) ?>
             <?php else: ?>
                 <!-- Display the question text if no formula exists -->
                 <?= Html::encode($q->question); ?>
@@ -102,7 +102,7 @@ $this->registerJs("
                 <?php if ($a->formula): ?>
                     <!-- Display the formula image if it exists for the answer -->
                     <?= $alphabet[$index++] . '. ' ?>
-                    <?= Html::img(Url::to('@web/' . $a->formula), ['style' => 'max-width: 100px;']) ?>
+                    <?= Html::img(Url::to('@web/' . $a->formula)) ?>
                     <br>
                 <?php else: ?>
                     <!-- Display the answer text if no formula exists -->

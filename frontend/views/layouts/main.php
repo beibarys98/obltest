@@ -68,7 +68,7 @@ Select2Asset::register($this);
                         : '/images/ru.png',
                     ['alt' => Yii::$app->language === 'kz-KZ' ? 'Қазақша' : 'Русский', 'style' => 'width:32px;height:32px;', 'class' => 'rounded']
                 ),
-                ['/site/language', 'view' => '/'.Yii::$app->controller->id.'/'.Yii::$app->controller->action->id],
+                ['/site/language', 'view' => '/site/login'],
                 ['class' => ['btn btn-link login text-decoration-none']]
             ),
             ['class' => ['d-flex']]
@@ -80,6 +80,17 @@ Select2Asset::register($this);
                 ['class' => 'btn btn-link logout text-decoration-none']
             )
             . Html::endForm();
+        echo Html::tag('div', Html::a( Html::img(
+            Yii::$app->language === 'kz-KZ'
+                ? '/images/kz.png'
+                : '/images/ru.png',
+            ['alt' => Yii::$app->language === 'kz-KZ' ? 'Қазақша' : 'Русский', 'style' => 'width:32px;height:32px;', 'class' => 'rounded']
+        ),
+            ['/site/language', 'view' => '/site/index'],
+            ['class' => ['btn btn-link login text-decoration-none']]
+        ),
+            ['class' => ['d-flex']]
+        );
     }
     NavBar::end();
     ?>

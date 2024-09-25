@@ -108,7 +108,7 @@ $this->title = $test->title;
                 ]) ?>
                 <?php if ($a->formula): ?>
                     <!-- Display the formula image if it exists for the answer -->
-                    <?php if ($a->id === $q->correct_answer): ?>
+                    <?php if ($a->id == $q->correct_answer): ?>
                         <strong><?= $alphabet[$index++] . '. '?></strong>
                         <?= Html::img(Url::to('@web/' . $a->formula)) ?>
                         <br>
@@ -119,7 +119,7 @@ $this->title = $test->title;
                     <?php endif; ?>
                 <?php else: ?>
                     <!-- Display the answer text if no formula exists -->
-                    <?php if ($a->id === $q->correct_answer): ?>
+                    <?php if ($a->id == $q->correct_answer): ?>
                         <strong><?= $alphabet[$index++] . '. ' . Html::encode($a->answer); ?></strong><br>
                     <?php else: ?>
                         <?= $alphabet[$index++] . '. ' . Html::encode($a->answer); ?><br>
