@@ -20,102 +20,76 @@ $this->title = $test->title;
 ?>
 <div class="test-view">
 
-    <p>
-        <?php
-        $isActive ? $class = 'active' : $class = 'disabled';
-        if(!$hasPaid){
-            echo Html::a(
-                Yii::t('app', 'Оплатить'),
-                ['payment/pay', 'id' => $test->id],
-                ['class' => 'btn btn-primary '.$class]);
-        }else{
-            echo Html::a(
-                Yii::t('app', 'Начать'),
-                ['view', 'id' => $test->id],
-                [
-                    'class' => 'btn btn-success active '.$class,
-                    'data' => [
-                        'confirm' => Yii::t('app', 'Вы уверены?'),
-                        'method' => 'post',
+    <div class="mt-5" style="margin: 0 auto; width: 500px;">
+        <div class="btn disabled w-100" style="font-size: 24px;">
+            <?= $test->title ?>
+        </div>
+
+        <div class="mt-5">
+            <?php
+            $isActive ? $class = 'active' : $class = 'disabled';
+            if(!$hasPaid){
+                echo Html::a(
+                    Yii::t('app', 'Оплатить'),
+                    ['payment/pay', 'id' => $test->id],
+                    ['class' => 'btn btn-primary w-100 '.$class]);
+            }else{
+                echo Html::a(
+                    Yii::t('app', 'Начать'),
+                    ['view', 'id' => $test->id],
+                    [
+                        'class' => 'btn btn-success active w-100 '.$class,
+                        'data' => [
+                            'confirm' => Yii::t('app', 'Вы уверены?'),
+                            'method' => 'post',
+                        ],
+                    ]);
+            }
+            ?>
+        </div>
+
+        <div class="mt-5">
+            <?= GridView::widget([
+                'dataProvider' => $certificate,
+                'layout' => "{items}",
+                'tableOptions' => ['class' => 'table table-bordered shadow-sm', 'style' => 'border-radius: 10px; overflow: hidden'],
+                'columns' => [
+                    [
+                        'attribute' => 'path',
+                        'label' => Yii::t('app', 'Сертификат'),
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            return Html::a('Сертификат',
+                                ['download', 'id' => $model->id]);
+                        },
                     ],
-                ]);
-        }
-        ?>
-    </p>
+                ],
+            ]); ?>
+        </div>
 
-    <?= DetailView::widget([
-        'model' => $test,
-        'attributes' => [
-            [
-                'attribute' => 'title',
-                'label' => Yii::t('app', 'Заголовок')
-            ],
-            [
-                'attribute' => 'subject',
-                'label' => Yii::t('app', 'Предмет'),
-                'value' => function($model) {
-                    // Check the current application language
-                    if (Yii::$app->language === 'ru-RU') {
-                        return $model->subject->subject_ru; // Show subject in Russian
-                    } else {
-                        return $model->subject->subject; // Show subject in Kazakh
-                    }
-                },
-            ],
-            [
-                'attribute' => 'start_time',
-                'label' => Yii::t('app', 'Открытие'),
-                'value' => function ($model) {
-                    return date('d/m H:i', strtotime($model->start_time)); // Short month name
-                },
-            ],
-            [
-                'attribute' => 'end_time',
-                'label' => Yii::t('app', 'Закрытие'),
-                'value' => function ($model) {
-                    return date('d/m H:i', strtotime($model->end_time)); // Short month name
-                },
-            ],
-            [
-                'attribute' => 'duration',
-                'label' => Yii::t('app', 'Длительность'),
-                'value' => function ($model) {
-                    return date('H:i:s', strtotime($model->duration)); // Short month name
-                },
-            ],
-        ],
-    ]) ?>
+        <div class="mt-5" style="width: 500px; margin: 0 auto;">
+            <div class="accordion shadow-sm" style="font-size: 24px;">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                            <?= Yii::t('app', 'Инструкция') ?>
+                        </button>
+                    </h2>
+                    <div class="accordion-collapse collapse" id="collapseOne">
+                        <div class="accordion-body" style="font-size: 16px;">
+                            1. <?= Yii::t('app', 'Вопросы олимпиады: По предмету – 50 вопросов;') ?> <br>
+                            2. <?= Yii::t('app', 'Время тестирования – 120 минут (по истечении времени тестирование автоматически закрывается);') ?> <br>
+                            3. <?= Yii::t('app', 'Из предложенных 4 ответов нужно выбрать 1 правильный ответ;') ?> <br>
+                            4. <?= Yii::t('app', '1 правильный ответ – 1 балл;') ?> <br>
+                            5. <?= Yii::t('app', 'Участник должен указать полные сведения о себе (Ф.И.О. по удостоверению личности, указать название города, района, наименование школы);') ?>
+                        </div>
 
-    <?= GridView::widget([
-        'dataProvider' => $test->status == 'finished' ? $report : new \yii\data\ArrayDataProvider(),
-        'layout' => "{items}",
-        'showHeader' => false,
-        'columns' => [
-            [
-                'attribute' => 'path',
-                'format' => 'raw',
-                'value' => function ($model) {
-                    return Html::a('Қатемен жұмыс',
-                        ['download', 'id' => $model->id]);
-                },
-            ],
-        ],
-    ]); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <?= GridView::widget([
-        'dataProvider' => $certificate,
-        'layout' => "{items}",
-        'showHeader' => false,
-        'columns' => [
-            [
-                'attribute' => 'path',
-                'format' => 'raw',
-                'value' => function ($model) {
-                    return Html::a('Сертификат',
-                        ['download', 'id' => $model->id]);
-                },
-            ],
-        ],
-    ]); ?>
+    </div>
+
 
 </div>

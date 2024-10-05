@@ -19,7 +19,7 @@ $this->title = Yii::t('app', 'Төлемдер');
 
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <div class="p-3" style="border: 1px solid lightgrey;">
+    <div class="p-3 shadow-sm" style="border: 1px solid black; border-radius: 10px;">
         <?php $form = ActiveForm::begin(); ?>
 
         <?= $form->field($purpose, 'purpose')->textInput()->label('Назначение платежа') ?>

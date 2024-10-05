@@ -31,30 +31,38 @@ $this->title = Yii::t('app', 'Жаңа тест');
 
     <?= $form->field($model, 'file')->input('file', ['class' => 'form-control'])->label('Тест') ?>
 
-    <?= $form->field($model, 'start_time')->widget(DateTimePicker::classname(), [
-        'options' => ['placeholder' => 'Күнін және уақытын таңдаңыз'],
-        'pluginOptions' => [
-            'autoclose' => true,
-            'format' => 'yyyy-mm-dd hh:ii',
-            'todayHighlight' => true
-        ]
-    ])->label('Ашылуы');?>
-    <?= $form->field($model, 'end_time')->widget(DateTimePicker::classname(), [
-        'options' => ['placeholder' => 'Күнін және уақытын таңдаңыз'],
-        'pluginOptions' => [
-            'autoclose' => true,
-            'format' => 'yyyy-mm-dd hh:ii',
-            'todayHighlight' => true
-        ]
-    ])->label('Жабылуы');?>
+    <div class="row">
+        <div class="col-lg-4">
+            <?= $form->field($model, 'start_time')->widget(DateTimePicker::classname(), [
+                'options' => ['placeholder' => 'Күнін және уақытын таңдаңыз'],
+                'pluginOptions' => [
+                    'autoclose' => true,
+                    'format' => 'yyyy-mm-dd hh:ii',
+                    'todayHighlight' => true
+                ]
+            ])->label('Ашылуы');?>
+        </div>
 
-    <div style="width: 120px;">
-        <?= $form->field($model, 'duration')->input('time')->label('Узақтығы');?>
+        <div class="col-lg-4">
+            <?= $form->field($model, 'end_time')->widget(DateTimePicker::classname(), [
+                'options' => ['placeholder' => 'Күнін және уақытын таңдаңыз'],
+                'pluginOptions' => [
+                    'autoclose' => true,
+                    'format' => 'yyyy-mm-dd hh:ii',
+                    'todayHighlight' => true
+                ]
+            ])->label('Жабылуы');?>
+        </div>
+
+        <div class="col-lg-4">
+            <div style="width: 100%;">
+                <?= $form->field($model, 'duration')->input('time')->label('Узақтығы');?>
+            </div>
+        </div>
     </div>
 
-
     <div class="form-group mt-3">
-        <?= Html::submitButton(Yii::t('app', 'Сақтау'), ['class' => 'btn btn-success']) ?>
+        <?= Html::submitButton(Yii::t('app', 'Сақтау'), ['class' => 'btn btn-success w-100']) ?>
     </div>
 
     <?php ActiveForm::end(); ?>

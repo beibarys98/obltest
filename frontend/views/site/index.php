@@ -9,58 +9,26 @@ use yii\grid\GridView;
 $this->title = Yii::t('app', Yii::$app->name)
 ?>
 <div class="site-index">
-    <?= GridView::widget([
-        'dataProvider' => $test,
-        'layout' => "{items}",
-        'columns' => [
-            [
-                'attribute' => 'title',
-                'label' => Yii::t('app', 'Заголовок'),
-                'format' => 'raw',
-                'value' => function ($model) {
-                    return Html::a($model->title, ['detail-view', 'id' => $model->id]);
-                },
+    <div class="mt-5" style="width: 500px; margin: 0 auto;">
+        <?= GridView::widget([
+            'dataProvider' => $test,
+            'layout' => "{items}",
+            'showHeader' => false,
+            'tableOptions' => ['class' => 'table table-bordered shadow-sm', 'style' => 'border-radius: 10px; overflow: hidden;'],
+            'columns' => [
+                [
+                    'attribute' => 'title',
+                    'label' => Yii::t('app', 'Заголовок'),
+                    'format' => 'raw',
+                    'contentOptions' => ['class' => 'text-center'], // Center the content
+                    'value' => function ($model) {
+                        return Html::a($model->title, ['detail-view', 'id' => $model->id], ['class' => 'btn w-100']);
+                    },
+                ],
             ],
-            [
-                'attribute' => 'subject_id',
-                'label' => Yii::t('app', 'Предмет'),
-                'value' => function($model) {
-                    // Check the current application language
-                    if (Yii::$app->language === 'ru-RU') {
-                        return $model->subject->subject_ru; // Show subject in Russian
-                    } else {
-                        return $model->subject->subject; // Show subject in Kazakh
-                    }
-                },
-            ],
-            [
-                'attribute' => 'start_time',
-                'label' => Yii::t('app', 'Открытие'),
-                'value' => function ($model) {
-                    return date('d/m H:i', strtotime($model->start_time)); // Short month name
-                },
-            ],
-            [
-                'attribute' => 'end_time',
-                'label' => Yii::t('app', 'Закрытие'),
-                'value' => function ($model) {
-                    return date('d/m H:i', strtotime($model->end_time)); // Short month name
-                },
-            ],
-            [
-                'attribute' => 'duration',
-                'label' => Yii::t('app', 'Длительность'),
-                'value' => function ($model) {
-                    return date('H:i:s', strtotime($model->duration)); // Short month name
-                },
-            ],
-            [
-                'attribute' => 'status',
-                'label' => 'Статус',
-                'value' => function ($model) {
-                    return Yii::t('app', $model->status);
-                }
-            ]
-        ],
-    ]); ?>
+        ]); ?>
+
+    </div>
+
+
 </div>

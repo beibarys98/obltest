@@ -38,7 +38,7 @@ Select2Asset::register($this);
         'brandLabel' => Html::img('@web/images/adort2.png', ['alt' => 'Logo', 'style' => 'height:30px; margin-right:10px;']) . Yii::t('app', Yii::$app->name),
         'brandUrl' => Admin::findOne(Yii::$app->user->id) ? Url::to('/test/index') : Yii::$app->homeUrl,
         'options' => [
-            'class' => 'navbar navbar-expand-md navbar-dark bg-dark fixed-top',
+            'class' => 'navbar navbar-expand-md navbar-light bg-light fixed-top shadow-sm'
         ],
     ]);
     $menuItems = [];
@@ -56,12 +56,6 @@ Select2Asset::register($this);
         'items' => $menuItems,
     ]);
     if (Yii::$app->user->isGuest) {
-        echo Html::tag('div',
-            Html::a(Yii::t('app', 'Регистрация'),
-                ['/site/signup'],['class' => ['btn btn-link login text-decoration-none']]),['class' => ['d-flex']]);
-        echo Html::tag('div',
-            Html::a(Yii::t('app', 'Войти'),
-                ['/site/login'],['class' => ['btn btn-link login text-decoration-none']]),['class' => ['d-flex']]);
         echo Html::tag('div', Html::a( Html::img(
                     Yii::$app->language === 'kz-KZ'
                         ? '/images/kz.png'
@@ -77,7 +71,8 @@ Select2Asset::register($this);
         echo Html::beginForm(['/site/logout'], 'post', ['class' => 'd-flex'])
             . Html::submitButton(
                 Yii::t('app', 'Выйти') . ' (' . Yii::$app->user->identity->username . ')',
-                ['class' => 'btn btn-link logout text-decoration-none']
+                ['class' => 'btn btn-link logout text-decoration-none',
+                'style' => 'color: black']
             )
             . Html::endForm();
         echo Html::tag('div', Html::a( Html::img(
@@ -109,7 +104,6 @@ Select2Asset::register($this);
 <footer class="footer mt-auto py-3 text-muted">
     <div class="container">
         <p class="float-start">&copy; <?= Html::encode(Yii::t('app', Yii::$app->name)) ?> <?= date('Y') ?></p>
-        <p class="float-end"><?= Yii::powered() ?></p>
     </div>
 </footer>
 

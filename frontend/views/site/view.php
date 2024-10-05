@@ -74,66 +74,78 @@ $this->registerJs("
 
     <?= Html::hiddenInput('test_id', $test->id) ?>
 
-    <div style="font-size: 24px; user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;">
-
-        <h1><?= Html::encode($this->title) ?></h1>
-
-        <?php $number = 1; ?>
-        <?php foreach ($questions as $q): ?>
-            <?= $number++ . '. '; ?>
-            <?php if ($q->formula): ?>
-                <!-- Display the formula image if it exists -->
-                <?= Html::img(Url::to('@web/' . $q->formula)) ?>
-            <?php else: ?>
-                <!-- Display the question text if no formula exists -->
-                <?= Html::encode($q->question); ?>
-            <?php endif; ?>
-            <br>
-            <?php
-            $answers = Answer::find()
-                ->andWhere(['question_id' => $q->id])
-                ->orderBy(new Expression('RAND()'))
-                ->all();
-            $alphabet = range('A', 'Z'); // Array of alphabet letters
-            $index = 0; // Initialize index for letters
-            ?>
-            <?php foreach ($answers as $a): ?>
-                <input type="radio" name="answers[<?= $q->id ?>]" value="<?= $a->answer ?>" class="form-check-input me-1">
-                <?php if ($a->formula): ?>
-                    <!-- Display the formula image if it exists for the answer -->
-                    <?= $alphabet[$index++] . '. ' ?>
-                    <?= Html::img(Url::to('@web/' . $a->formula)) ?>
+    <div class="row">
+        <div class="col-9">
+            <div style="font-size: 24px; user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;">
+                <?php $number = 1; ?>
+                <?php foreach ($questions as $q): ?>
+                    <?= $number++ . '. '; ?>
+                    <?php if ($q->formula): ?>
+                        <!-- Display the formula image if it exists -->
+                        <?= Html::img(Url::to('@web/' . $q->formula)) ?>
+                    <?php else: ?>
+                        <!-- Display the question text if no formula exists -->
+                        <?= Html::encode($q->question); ?>
+                    <?php endif; ?>
                     <br>
-                <?php else: ?>
-                    <!-- Display the answer text if no formula exists -->
-                    <?= $alphabet[$index++] . '. ' . Html::encode($a->answer); ?><br>
-                <?php endif; ?>
-            <?php endforeach; ?>
-            <br>
-        <?php endforeach; ?>
-    </div>
-
-    <div class="text-center mt-4">
-        <?= Html::submitButton(Yii::t('app', 'Завершить'), [
-            'class' => 'btn btn-success',
-            'onclick' => 'return confirm("' . Yii::t('app', 'Вы уверены?') . '")',
-        ]) ?>
-    </div>
-
-    <?php ActiveForm::end(); ?>
-
-    <div class="shadow" style="position: fixed;
-        bottom: 10%; right: 9%; z-index: 1000;
-        width: 150px; height: 90px; border: 1px solid black;
-        border-radius: 10px; text-align: center;
-        background-color: white;">
-        <div class="site-index">
-            <div style="color: red;">
-                <?= Yii::t('app', 'Не обновляйте страницу!')?>
+                    <?php
+                    $answers = Answer::find()
+                        ->andWhere(['question_id' => $q->id])
+                        ->orderBy(new Expression('RAND()'))
+                        ->all();
+                    $alphabet = range('A', 'Z'); // Array of alphabet letters
+                    $index = 0; // Initialize index for letters
+                    ?>
+                    <?php foreach ($answers as $a): ?>
+                        <input type="radio" name="answers[<?= $q->id ?>]" value="<?= $a->answer ?>" class="form-check-input me-1">
+                        <?php if ($a->formula): ?>
+                            <!-- Display the formula image if it exists for the answer -->
+                            <?= $alphabet[$index++] . '. ' ?>
+                            <?= Html::img(Url::to('@web/' . $a->formula)) ?>
+                            <br>
+                        <?php else: ?>
+                            <!-- Display the answer text if no formula exists -->
+                            <?= $alphabet[$index++] . '. ' . Html::encode($a->answer); ?><br>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                    <br>
+                <?php endforeach; ?>
             </div>
-            <div class="jumbotron">
-                <p id="clock" style="font-size: 24px;"></p>
+
+            <div class="text-center mt-4">
+                <?= Html::submitButton(Yii::t('app', 'Завершить'), [
+                    'class' => 'btn btn-success',
+                    'onclick' => 'return confirm("' . Yii::t('app', 'Вы уверены?') . '")',
+                ]) ?>
+            </div>
+
+            <?php ActiveForm::end(); ?>
+        </div>
+        <?php
+        // Generate sample data for 50 questions
+        $questions = [];
+        for ($i = 1; $i <= 50; $i++) {
+            // Randomly determine if the answer has been submitted (for demonstration purposes)
+            $questions[] = [
+                'number' => $i,
+                'answerSubmitted' => (bool) rand(0, 1)  // Random true or false
+            ];
+        }
+        ?>
+
+        <div class="col-3 shadow-sm" style="border: 1px solid black; height: 90vh; display: flex; border-radius: 10px;
+        flex-direction: column; align-items: center; justify-content: flex-start; padding: 10px;">
+            <div style="display: flex; flex-wrap: wrap; justify-content: left; width: 100%;">
+                <?php foreach ($questions as $question): ?>
+                    <div style="width: 30px; height: 30px; display: flex; align-items: center;
+                            justify-content: center; background-color: <?= $question['answerSubmitted'] ? 'green' : 'red' ?>;
+                            color: white; font-size: 14px; margin: 2px; border-radius: 5px;">
+                        <?= $question['number'] ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="jumbotron w-100" style="margin-top: auto; border-top: 1px solid black;">
+                <div id="clock" style="font-size: 24px; text-align: center;"></div>
             </div>
         </div>
-    </div>
 </div>

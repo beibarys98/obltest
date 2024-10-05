@@ -15,7 +15,7 @@ $this->title = $test->title;
 ?>
 <div class="test-view">
 
-    <div class="shadow p-3 mb-3" style="border: 1px solid black; border-radius: 10px;">
+    <div class="shadow-sm p-3 mb-3" style="border: 1px solid black; border-radius: 10px;">
         <label for="readonly">Атауы</label>
         <input id="readonly" class="form-control" type="text" placeholder="<?= $test->title ?>" readonly>
         <label for="readonly">Пән</label>
@@ -38,7 +38,7 @@ $this->title = $test->title;
         <input id="readonly" class="form-control" type="text" placeholder="<?= Yii::t('app', $test->status) ?>" readonly>
     </div>
 
-    <div class="shadow p-1 mb-3 me-5" style="border: 1px solid black; border-radius: 10px; display: inline-block;">
+    <div class="shadow-sm p-1 mb-3 me-5" style="border: 1px solid black; border-radius: 10px; display: inline-block;">
         <?php
         if($test->status == 'new'){
             echo Html::a(Yii::t('app', 'Дайын') ,
