@@ -14,7 +14,10 @@ $this->title = Yii::t('app', Yii::$app->name)
             'dataProvider' => $test,
             'layout' => "{items}",
             'showHeader' => false,
-            'tableOptions' => ['class' => 'table table-bordered shadow-sm', 'style' => 'border-radius: 10px; overflow: hidden;'],
+            'tableOptions' => [
+                'class' => 'table table-bordered shadow-sm',
+                'style' => 'border-radius: 10px; overflow: hidden;'
+            ],
             'columns' => [
                 [
                     'attribute' => 'title',
@@ -22,11 +25,15 @@ $this->title = Yii::t('app', Yii::$app->name)
                     'format' => 'raw',
                     'contentOptions' => ['class' => 'text-center'], // Center the content
                     'value' => function ($model) {
-                        return Html::a($model->title, ['detail-view', 'id' => $model->id], ['class' => 'btn w-100']);
+                        return Html::a($model->title, ['detail-view', 'id' => $model->id], [
+                            'class' => 'btn w-100',
+                            'style' => 'font-size: 24px;' // Set font size to 24px
+                        ]);
                     },
                 ],
             ],
         ]); ?>
+
 
     </div>
 
