@@ -100,27 +100,22 @@ class TestController extends Controller
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post())) {
-
                 $model->status = 'new';
-
                 if (Yii::$app->request->isPost) {
                     $model->file = UploadedFile::getInstance($model, 'file');
+                    $filePath = 'uploads/'
+                        . Yii::$app->security->generateRandomString(8)
+                        . '.'. $model->file->extension;
 
-                    if ($model->validate()) {
-                        $filePath = 'uploads/'
-                            . Yii::$app->security->generateRandomString(8)
-                            . '.'. $model->file->extension;
+                    // Save the file to the specified path
+                    if ($model->file->saveAs($filePath)) {
+                        $model->test = $filePath;
+                        $model->save(false);
 
-                        // Save the file to the specified path
-                        if ($model->file->saveAs($filePath)) {
-                            $model->test = $filePath;
-                            $model->save(false);
+                        $linesArray = $this->parseWordDocument($filePath);
+                        $this->processAndStoreQuestions($linesArray, $model->id);
 
-                            $linesArray = $this->parseWordDocument($filePath);
-                            $this->processAndStoreQuestions($linesArray, $model->id);
-
-                            return $this->redirect(['view', 'id' => $model->id]);
-                        }
+                        return $this->redirect(['view', 'id' => $model->id]);
                     }
                 }
             }

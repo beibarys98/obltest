@@ -1,6 +1,8 @@
 <?php
 
 use common\models\Answer;
+use common\models\Question;
+use common\models\TeacherAnswer;
 use yii\bootstrap5\ActiveForm;
 use yii\db\Expression;
 use yii\helpers\Html;
@@ -10,7 +12,7 @@ use yii\web\YiiAsset;
 
 /** @var $this */
 /** @var $test */
-/** @var $questions*/
+/** @var $question*/
 /** @var $startTime*/
 
 $this->title = $test->title;
@@ -66,86 +68,93 @@ $this->registerJs("
 
 <div class="test-view">
 
-    <?php $form = ActiveForm::begin([
-        'id' => 'myForm',
-        'action' => Url::to(['site/submit']),
-        'method' => 'post',
-    ]); ?>
+    <div class="d-flex">
+        <div style="width: 70%;" class="p-3">
+            <div class="p-3" style="border: 1px solid black; border-radius: 10px; font-size: 24px;
+    user-select: none; -webkit-user-select: none; -moz-user-select: none;
+    -ms-user-select: none;">
+                <?php if ($question->formula): ?>
+                    <!-- Display the formula image if it exists -->
+                    <?= Html::img(Url::to('@web/' . $question->formula)) ?>
+                <?php else: ?>
+                    <!-- Display the question text if no formula exists -->
+                    <?= Html::encode($question->question); ?>
+                <?php endif; ?>
+                <br>
 
-    <?= Html::hiddenInput('test_id', $test->id) ?>
+                <?php
+                $answers = Answer::find()
+                    ->andWhere(['question_id' => $question->id])
+                    ->all();
+                $alphabet = range('A', 'Z'); // Array of alphabet letters
+                $index = 0; // Initialize index for letters
+                ?>
 
-    <div class="row">
-        <div class="col-9">
-            <div style="font-size: 24px; user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;">
-                <?php $number = 1; ?>
-                <?php foreach ($questions as $q): ?>
-                    <?= $number++ . '. '; ?>
-                    <?php if ($q->formula): ?>
-                        <!-- Display the formula image if it exists -->
-                        <?= Html::img(Url::to('@web/' . $q->formula)) ?>
-                    <?php else: ?>
-                        <!-- Display the question text if no formula exists -->
-                        <?= Html::encode($q->question); ?>
-                    <?php endif; ?>
-                    <br>
+                <form id="answerForm" action="<?= Url::to(['site/submit']) ?>" method="get">
                     <?php
-                    $answers = Answer::find()
-                        ->andWhere(['question_id' => $q->id])
-                        ->orderBy(new Expression('RAND()'))
-                        ->all();
-                    $alphabet = range('A', 'Z'); // Array of alphabet letters
-                    $index = 0; // Initialize index for letters
+                    // Find the TeacherAnswer for this question, if it exists
+                    $teacherAnswer = TeacherAnswer::findOne(['question_id' => $question->id]);
+                    $selectedAnswerId = $teacherAnswer ? $teacherAnswer->answer_id : null;
                     ?>
+
                     <?php foreach ($answers as $a): ?>
-                        <input type="radio" name="answers[<?= $q->id ?>]" value="<?= $a->answer ?>" class="form-check-input me-1">
+                        <input type="radio" name="answer_id" value="<?= $a->id ?>"
+                               class="form-check-input me-1"
+                            <?= $selectedAnswerId == $a->id ? 'checked' : '' // Check if the answer was previously selected ?>>
                         <?php if ($a->formula): ?>
                             <!-- Display the formula image if it exists for the answer -->
                             <?= $alphabet[$index++] . '. ' ?>
-                            <?= Html::img(Url::to('@web/' . $a->formula)) ?>
-                            <br>
+                            <?= Html::img(Url::to('@web/' . $a->formula)) ?><br>
                         <?php else: ?>
                             <!-- Display the answer text if no formula exists -->
                             <?= $alphabet[$index++] . '. ' . Html::encode($a->answer); ?><br>
                         <?php endif; ?>
                     <?php endforeach; ?>
-                    <br>
-                <?php endforeach; ?>
-            </div>
 
-            <div class="text-center mt-4">
-                <?= Html::submitButton(Yii::t('app', 'Завершить'), [
-                    'class' => 'btn btn-success',
-                    'onclick' => 'return confirm("' . Yii::t('app', 'Вы уверены?') . '")',
-                ]) ?>
-            </div>
+                    <input type="hidden" name="question_id" value="<?= $question->id ?>">
 
-            <?php ActiveForm::end(); ?>
+                    <!-- Submit button to trigger form submission via GET -->
+                    <button type="submit" class="btn btn-primary mt-5 w-100">
+                        <?= Yii::t('app', 'Сохранить') ?>
+                    </button>
+                </form>
+            </div>
         </div>
+
         <?php
         // Generate sample data for 50 questions
-        $questions = [];
-        for ($i = 1; $i <= 50; $i++) {
-            // Randomly determine if the answer has been submitted (for demonstration purposes)
-            $questions[] = [
-                'number' => $i,
-                'answerSubmitted' => (bool) rand(0, 1)  // Random true or false
-            ];
-        }
+        $questions = Question::find()->andWhere(['test_id' => $test->id])->all();
         ?>
 
-        <div class="col-3 shadow-sm" style="border: 1px solid black; height: 90vh; display: flex; border-radius: 10px;
-        flex-direction: column; align-items: center; justify-content: flex-start; padding: 10px;">
-            <div style="display: flex; flex-wrap: wrap; justify-content: left; width: 100%;">
-                <?php foreach ($questions as $question): ?>
-                    <div style="width: 30px; height: 30px; display: flex; align-items: center;
-                            justify-content: center; background-color: <?= $question['answerSubmitted'] ? 'green' : 'red' ?>;
-                            color: white; font-size: 14px; margin: 2px; border-radius: 5px;">
-                        <?= $question['number'] ?>
-                    </div>
-                <?php endforeach; ?>
+        <div class="p-3" style="width: 30%;">
+            <div class="p-3" style="border: 1px solid black; border-radius: 10px;">
+                <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+                    <?php $index = 1; // Initialize counter ?>
+                    <?php foreach ($questions as $q): ?>
+                        <?php
+                        // Find the corresponding TeacherAnswer, if it exists
+                        $teacherAnswer = TeacherAnswer::findOne(['question_id' => $q->id]);
+                        $backgroundColor = $teacherAnswer && $teacherAnswer->answer_id ? 'green' : 'red';
+                        $borderStyle = ($q->id == $question->id) ? '5px solid black' : 'none';
+                        ?>
+                        <a href="<?= Url::to(['view', 'id' => $q->id]) ?>" style="text-decoration: none;">
+                            <div style="width: 30px; height: 30px; display: flex; align-items: center;
+                                    justify-content: center; border: <?= $borderStyle ?>;
+                                    background-color: <?= $backgroundColor ?>;
+                                    color: white; font-size: 14px; margin: 2px; border-radius: 5px;">
+                                <?= $index++ // Increment and display the counter ?>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+                <div class="jumbotron w-100" style="text-align: center;">
+                    <div id="clock" class="mt-5 mb-5" style="border: 1px solid black;
+                        border-radius: 10px; font-size: 24px;"></div>
+                    <a href="<?= Url::to(['site/end']) ?>" class="btn btn-danger w-100">
+                        <?= Yii::t('app', 'Завершить') ?>
+                    </a>
+                </div>
             </div>
-            <div class="jumbotron w-100" style="margin-top: auto; border-top: 1px solid black;">
-                <div id="clock" style="font-size: 24px; text-align: center;"></div>
-            </div>
+
         </div>
 </div>

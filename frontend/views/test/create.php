@@ -31,6 +31,20 @@ $this->title = Yii::t('app', 'Жаңа тест');
 
     <?= $form->field($model, 'file')->input('file', ['class' => 'form-control'])->label('Тест') ?>
 
+    <?php
+    $languages = [
+        'kz' => 'қазақ тобы',
+        'ru' => 'орыс тобы',
+    ];
+    ?>
+
+    <?= $form->field($model, 'language')->dropDownList(
+        $languages,
+        ['prompt' => 'Тілдік топты таңдаңыз'])
+        ->label('Тілдік топ')?>
+
+    <?= $form->field($model, 'version')->textInput()->label('Нұсқа') ?>
+
     <div class="row">
         <div class="col-lg-4">
             <?= $form->field($model, 'start_time')->widget(DateTimePicker::classname(), [

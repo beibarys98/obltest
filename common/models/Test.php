@@ -11,15 +11,19 @@ use Yii;
  * @property int|null $subject_id
  * @property string|null $title
  * @property string|null $test
+ * @property string|null $language
+ * @property int|null $version
  * @property string|null $status
  * @property string|null $start_time
  * @property string|null $end_time
  * @property string|null $duration
  *
  * @property File[] $files
+ * @property Payment[] $payments
  * @property Question[] $questions
  * @property ResultPdf[] $resultPdfs
  * @property Result[] $results
+ * @property StartTime[] $startTimes
  * @property Subject $subject
  */
 class Test extends \yii\db\ActiveRecord
@@ -40,12 +44,12 @@ class Test extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['subject_id', 'start_time', 'end_time', 'duration', 'title'], 'required'],
-
+            [['title', 'subject_id', 'test', 'language', 'version', 'start_time', 'end_time', 'duration'], 'required'],
             [['file'], 'file', 'skipOnEmpty' => false, 'extensions' => 'doc, docx'],
-            [['subject_id'], 'integer'],
+            [['version'], 'match', 'pattern' => '/^\d+$/', 'message' => 'Нұсқа тек сан бола алады.'],
+            [['subject_id', 'version'], 'integer'],
             [['start_time', 'end_time', 'duration'], 'safe'],
-            [['title', 'test', 'status'], 'string', 'max' => 255],
+            [['title', 'test', 'language', 'status'], 'string', 'max' => 255],
             [['subject_id'], 'exist', 'skipOnError' => true, 'targetClass' => Subject::class, 'targetAttribute' => ['subject_id' => 'id']],
         ];
     }
@@ -60,6 +64,8 @@ class Test extends \yii\db\ActiveRecord
             'subject_id' => Yii::t('app', 'Subject ID'),
             'title' => Yii::t('app', 'Title'),
             'test' => Yii::t('app', 'Test'),
+            'language' => Yii::t('app', 'Language'),
+            'version' => Yii::t('app', 'Version'),
             'status' => Yii::t('app', 'Status'),
             'start_time' => Yii::t('app', 'Start Time'),
             'end_time' => Yii::t('app', 'End Time'),
@@ -75,6 +81,16 @@ class Test extends \yii\db\ActiveRecord
     public function getFiles()
     {
         return $this->hasMany(File::class, ['test_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[Payments]].
+     *
+     * @return \yii\db\ActiveQuery|\common\models\query\PaymentQuery
+     */
+    public function getPayments()
+    {
+        return $this->hasMany(Payment::class, ['test_id' => 'id']);
     }
 
     /**
@@ -105,6 +121,16 @@ class Test extends \yii\db\ActiveRecord
     public function getResults()
     {
         return $this->hasMany(Result::class, ['test_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[StartTimes]].
+     *
+     * @return \yii\db\ActiveQuery|\common\models\query\StartTimeQuery
+     */
+    public function getStartTimes()
+    {
+        return $this->hasMany(StartTime::class, ['test_id' => 'id']);
     }
 
     /**

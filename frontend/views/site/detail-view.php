@@ -1,6 +1,7 @@
 <?php
 
 use common\models\Formula;
+use common\models\Question;
 use yii\bootstrap5\ActiveForm;
 use yii\grid\GridView;
 use yii\helpers\Html;
@@ -34,16 +35,24 @@ $this->title = $test->title;
                     ['payment/pay', 'id' => $test->id],
                     ['class' => 'btn btn-primary w-100 '.$class]);
             }else{
+                $firstQuestion = Question::find()
+                    ->where(['test_id' => $test->id])
+                    ->orderBy(['id' => SORT_ASC]) // or any other field to determine the first question
+                    ->one();
+
+                $firstQuestionId = $firstQuestion ? $firstQuestion->id : null; // Get the first question ID or null if none exist
+
                 echo Html::a(
                     Yii::t('app', 'Начать'),
-                    ['view', 'id' => $test->id],
+                    ['view', 'id' => $firstQuestionId], // Pass the first question's ID
                     [
-                        'class' => 'btn btn-success active w-100 '.$class,
+                        'class' => 'btn btn-success active w-100 ' . $class,
                         'data' => [
                             'confirm' => Yii::t('app', 'Вы уверены?'),
                             'method' => 'post',
                         ],
-                    ]);
+                    ]
+                );
             }
             ?>
         </div>

@@ -80,7 +80,7 @@ class PaymentController extends Controller
                     $payment->payment = $filePath;
                     $payment->created_at = date('Y-m-d H:i:s');
                     if ($payment->save(false)) {
-                        return $this->redirect(['site/detail-view', 'id' => $id]);
+                        return $this->redirect(['site/index']);
                     }
                 }
             }

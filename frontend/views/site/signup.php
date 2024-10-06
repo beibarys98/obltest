@@ -53,7 +53,20 @@ $this->title = Yii::t('app', 'Регистрация');
 
             <?= $form->field($model2, 'subject_id')->dropDownList(
                 $subjects,
-                ['prompt' => Yii::t('app', 'Выберите предмет')])->label(Yii::t('app', 'Предмет')) ?>
+                ['prompt' => Yii::t('app', 'Выберите предмет')])
+                ->label(Yii::t('app', 'Предмет')) ?>
+
+            <?php
+            $languages = [
+                'kz' => Yii::t('app', 'казахская группа'),
+                'ru' => Yii::t('app', 'русская группа'),
+            ];
+            ?>
+
+            <?= $form->field($model2, 'language')->dropDownList(
+                $languages,
+                ['prompt' => Yii::t('app', 'Выберите языковую группу')])
+                ->label(Yii::t('app', 'Языковая группа'))?>
 
             <?= $form->field($model, 'password')->passwordInput()->label(Yii::t('app', 'Пароль')) ?>
 
