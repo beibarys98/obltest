@@ -1,10 +1,9 @@
 <?php
 
-use common\models\Test;
 use yii\helpers\Html;
 use yii\helpers\Url;
-use yii\grid\ActionColumn;
 use yii\grid\GridView;
+use yii\widgets\ActiveForm;
 use yii\widgets\Pjax;
 /** @var yii\web\View $this */
 /** @var common\models\TestSearch $searchModel */
@@ -12,12 +11,45 @@ use yii\widgets\Pjax;
 /** @var yii\data\ActiveDataProvider $dataProvider2 */
 /** @var yii\data\ActiveDataProvider $dataProvider3 */
 /** @var yii\data\ActiveDataProvider $dataProvider4 */
+/** @var yii\data\ActiveDataProvider $dataProvider5 */
+/** @var $percentage*/
 
 $this->title = Yii::t('app', Yii::$app->name)
 ?>
 <div class="test-index">
 
     <h1>Тесттер</h1>
+
+    <div class="p-3 shadow-sm" style="border: 1px solid black; border-radius: 10px;">
+        <?php $form = ActiveForm::begin(); ?>
+
+        <div class="d-flex">
+            <div style="width: 20%" class="p-1">
+                <?= $form->field($percentage, 'first')->textInput()->label('Бірінші') ?>
+            </div>
+            <div style="width: 20%" class="p-1">
+                <?= $form->field($percentage, 'second')->textInput()->label('Екінші') ?>
+            </div>
+            <div style="width: 20%" class="p-1">
+                <?= $form->field($percentage, 'third')->textInput()->label('Үшінші') ?>
+            </div>
+            <div style="width: 20%" class="p-1">
+                <?= $form->field($percentage, 'good')->textInput()->label('Алғыс хат') ?>
+            </div>
+            <div style="width: 20%" class="p-1">
+                <?= $form->field($percentage, 'participant')->textInput()->label('Сертификат') ?>
+            </div>
+        </div>
+        <br>
+        <div class="form-group">
+            <?= Html::submitButton('Сақтау', ['class' => 'btn btn-primary',
+                'style' => 'width: 100px; text-align: center;']) ?>
+        </div>
+
+        <?php ActiveForm::end(); ?>
+    </div>
+
+    <br>
 
     <p>
         <?= Html::a(Yii::t('app', 'Жаңа тест'), ['create'], ['class' => 'btn btn-success']) ?>
@@ -40,18 +72,27 @@ $this->title = Yii::t('app', Yii::$app->name)
                     [
                         'format' => 'raw',
                         'value' => function ($model) {
-                            return Html::a($model->title, ['view', 'id' => $model->id]);
+                            return Html::a(Html::tag('div', $model->title, [
+                                'style' => 'display: -webkit-box; -webkit-line-clamp: 2; 
+                                    -webkit-box-orient: vertical; overflow: hidden; 
+                                    text-overflow: ellipsis; max-height: 3em; line-height: 1.5em; width: 120px;']),
+                                ['view', 'id' => $model->id], ['title' => $model->title,]);
                         },
                     ],
                     [
-                        'value' => 'subject.subject',
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            return Html::tag('div', $model->subject->subject, [
+                                'style' => 'width: 120px; display: block; overflow: hidden;
+                                text-overflow: ellipsis; max-height: 3em; line-height: 1.5em;'
+                            ]);
+                        },
                     ],
                     [
                         'format' => 'raw',
                         'value' => function ($model) {
                             return nl2br(
-                                date('d/m H:i', strtotime($model->start_time)) . "<br>" .
-                                date('d/m H:i', strtotime($model->end_time)) . "<br>" .
+                                date('d M', strtotime($model->start_time)) . "<br>" .
                                 date('H:i:s', strtotime($model->duration))
                             );
                         },
@@ -71,18 +112,27 @@ $this->title = Yii::t('app', Yii::$app->name)
                     [
                         'format' => 'raw',
                         'value' => function ($model) {
-                            return Html::a($model->title, ['view', 'id' => $model->id]);
+                            return Html::a(Html::tag('div', $model->title, [
+                                'style' => 'display: -webkit-box; -webkit-line-clamp: 2; 
+                                    -webkit-box-orient: vertical; overflow: hidden; 
+                                    text-overflow: ellipsis; max-height: 3em; line-height: 1.5em; width: 120px;']),
+                                ['view', 'id' => $model->id], ['title' => $model->title,]);
                         },
                     ],
                     [
-                        'value' => 'subject.subject',
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            return Html::tag('div', $model->subject->subject, [
+                                'style' => 'width: 120px; display: block; overflow: hidden;
+                                text-overflow: ellipsis; max-height: 3em; line-height: 1.5em;'
+                            ]);
+                        },
                     ],
                     [
                         'format' => 'raw',
                         'value' => function ($model) {
                             return nl2br(
-                                date('d/m H:i', strtotime($model->start_time)) . "<br>" .
-                                date('d/m H:i', strtotime($model->end_time)) . "<br>" .
+                                date('d M', strtotime($model->start_time)) . "<br>" .
                                 date('H:i:s', strtotime($model->duration))
                             );
                         },
@@ -102,18 +152,27 @@ $this->title = Yii::t('app', Yii::$app->name)
                     [
                         'format' => 'raw',
                         'value' => function ($model) {
-                            return Html::a($model->title, ['view', 'id' => $model->id]);
+                            return Html::a(Html::tag('div', $model->title, [
+                                'style' => 'display: -webkit-box; -webkit-line-clamp: 2; 
+                                    -webkit-box-orient: vertical; overflow: hidden; 
+                                    text-overflow: ellipsis; max-height: 3em; line-height: 1.5em; width: 120px;']),
+                                ['view', 'id' => $model->id], ['title' => $model->title,]);
                         },
                     ],
                     [
-                        'value' => 'subject.subject',
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            return Html::tag('div', $model->subject->subject, [
+                                'style' => 'width: 120px; display: block; overflow: hidden;
+                                text-overflow: ellipsis; max-height: 3em; line-height: 1.5em;'
+                            ]);
+                        },
                     ],
                     [
                         'format' => 'raw',
                         'value' => function ($model) {
                             return nl2br(
-                                date('d/m H:i', strtotime($model->start_time)) . "<br>" .
-                                date('d/m H:i', strtotime($model->end_time)) . "<br>" .
+                                date('d M', strtotime($model->start_time)) . "<br>" .
                                 date('H:i:s', strtotime($model->duration))
                             );
                         },
@@ -125,57 +184,86 @@ $this->title = Yii::t('app', Yii::$app->name)
 
     <div class="row">
 
-        <h4>Аяқталған тесттер</h4>
+        <div class="col-6">
+            <h4>Аяқталған тесттер</h4>
 
-        <?= GridView::widget([
-            'dataProvider' => $dataProvider4,
-            'layout' => "{items}",
-            'columns' => [
-                [
-                    'attribute' => 'title',
-                    'label' => 'Атауы',
-                    'format' => 'raw',
-                    'value' => function ($model) {
-                        return Html::a($model->title, ['view', 'id' => $model->id]);
-                    },
+            <?= GridView::widget([
+                'dataProvider' => $dataProvider4,
+                'layout' => "{items}",
+                'showHeader' => false,
+                'columns' => [
+                    [
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            return Html::a(Html::tag('div', $model->title, [
+                                'style' => 'display: -webkit-box; -webkit-line-clamp: 2; 
+                                    -webkit-box-orient: vertical; overflow: hidden; 
+                                    text-overflow: ellipsis; max-height: 3em; line-height: 1.5em; width: 200px;']),
+                                ['view', 'id' => $model->id], ['title' => $model->title,]);
+                        },
+                    ],
+                    [
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            return Html::tag('div', $model->subject->subject, [
+                                'style' => 'width: 200px; display: block; overflow: hidden;
+                                text-overflow: ellipsis; max-height: 3em; line-height: 1.5em;'
+                            ]);
+                        },
+                    ],
+                    [
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            return nl2br(
+                                date('d M', strtotime($model->start_time)) . "<br>" .
+                                date('H:i:s', strtotime($model->duration))
+                            );
+                        },
+                    ],
                 ],
-                [
-                    'attribute' => 'subject_id',
-                    'value' => 'subject.subject',
-                    'label' => 'Пән'
+            ]); ?>
+        </div>
+
+        <div class="col-6">
+            <h4>Марапатталған тесттер</h4>
+
+            <?= GridView::widget([
+                'dataProvider' => $dataProvider5,
+                'layout' => "{items}",
+                'showHeader' => false,
+                'columns' => [
+                    [
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            return Html::a(Html::tag('div', $model->title, [
+                                'style' => 'display: -webkit-box; -webkit-line-clamp: 2; 
+                                    -webkit-box-orient: vertical; overflow: hidden; 
+                                    text-overflow: ellipsis; max-height: 3em; line-height: 1.5em; width: 200px;']),
+                                ['view', 'id' => $model->id], ['title' => $model->title,]);
+                        },
+                    ],
+                    [
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            return Html::tag('div', $model->subject->subject, [
+                                'style' => 'width: 200px; display: block; overflow: hidden;
+                                text-overflow: ellipsis; max-height: 3em; line-height: 1.5em;'
+                            ]);
+                        },
+                    ],
+                    [
+                        'attribute' => 'id',
+                        'label' => 'Файл',
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            return Html::a('Нәтиже.pdf', Url::to(['test/result', 'id' => $model->id]), ['data-pjax' => 0]);
+                        }
+                    ],
                 ],
-                [
-                    'attribute' => 'start_time',
-                    'label' => 'Ашылуы',
-                    'value' => function ($model) {
-                        return date('d/m H:i', strtotime($model->start_time)); // Short month name
-                    },
-                ],
-                [
-                    'attribute' => 'end_time',
-                    'label' => 'Жабылуы',
-                    'value' => function ($model) {
-                        return date('d/m H:i', strtotime($model->end_time)); // Short month name
-                    },
-                ],
-                [
-                    'attribute' => 'duration',
-                    'label' => 'Узақтығы',
-                    'value' => function ($model) {
-                        return date('H:i:s', strtotime($model->duration)); // Short month name
-                    },
-                ],
-                [
-                    'attribute' => 'id',
-                    'label' => 'Файл',
-                    'format' => 'raw',
-                    'value' => function ($model) {
-                        return Html::a('Нәтиже.pdf', Url::to(['test/result', 'id' => $model->id]), ['data-pjax' => 0]);
-                    }
-                ],
-            ],
-        ]); ?>
-    </div>
+            ]); ?>
+        </div>
+
+
 
 
     <?php Pjax::end(); ?>

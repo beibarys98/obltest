@@ -45,6 +45,18 @@ $this->title = Yii::t('app', '{name}', [
         $subjects,
         ['prompt' => 'Пән таңдаңыз'])->label('Пән') ?>
 
+    <?php
+    $languages = [
+        'kz' => Yii::t('app', 'казахская группа'),
+        'ru' => Yii::t('app', 'русская группа'),
+    ];
+    ?>
+
+    <?= $form->field($model2, 'language')->dropDownList(
+        $languages,
+        ['prompt' => Yii::t('app', 'Выберите языковую группу')])
+        ->label(Yii::t('app', 'Языковая группа'))?>
+
     <?= $form->field($model, 'password')->passwordInput()->label('Құпия сөз өзгерту') ?>
 
     <div class="form-group mt-3">

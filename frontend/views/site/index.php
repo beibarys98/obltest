@@ -1,13 +1,8 @@
 <?php
 
-use common\models\Formula;
 use common\models\Question;
-use yii\bootstrap5\ActiveForm;
 use yii\grid\GridView;
 use yii\helpers\Html;
-use yii\helpers\Url;
-use yii\web\View;
-use yii\widgets\DetailView;
 
 /** @var yii\web\View $this */
 /** @var common\models\Test $test */
@@ -37,10 +32,10 @@ $this->title = $test->title;
             }else{
                 $firstQuestion = Question::find()
                     ->where(['test_id' => $test->id])
-                    ->orderBy(['id' => SORT_ASC]) // or any other field to determine the first question
+                    ->orderBy(['id' => SORT_ASC])
                     ->one();
 
-                $firstQuestionId = $firstQuestion ? $firstQuestion->id : null; // Get the first question ID or null if none exist
+                $firstQuestionId = $firstQuestion ? $firstQuestion->id : null;
 
                 echo Html::a(
                     Yii::t('app', 'Начать'),

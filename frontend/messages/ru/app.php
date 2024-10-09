@@ -5,4 +5,5 @@ return [
     'new' => 'новый',
     'finished' => 'окончен',
     'deleted' => 'удален',
+    'certificated' => 'награжден'
 ];

@@ -25,47 +25,52 @@ $this->title = Yii::t('app', 'Жаңа тест');
     $subjects = ArrayHelper::map(Subject::find()->all(), 'id', 'subject');
     ?>
 
-    <?= $form->field($model, 'subject_id')->dropDownList(
-        $subjects,
-        ['prompt' => 'Пән таңдаңыз'])->label('Пән') ?>
+    <div class="row">
+        <div class="col-lg-4">
+            <?= $form->field($model, 'subject_id')->dropDownList(
+                $subjects,
+                ['prompt' => 'Пән таңдаңыз'])->label('Пән') ?>
 
-    <?= $form->field($model, 'file')->input('file', ['class' => 'form-control'])->label('Тест') ?>
+        </div>
+        <div class="col-lg-4">
+            <?php
+            $languages = [
+                'kz' => 'қазақ тобы',
+                'ru' => 'орыс тобы',
+            ];
+            ?>
 
-    <?php
-    $languages = [
-        'kz' => 'қазақ тобы',
-        'ru' => 'орыс тобы',
-    ];
-    ?>
+            <?= $form->field($model, 'language')->dropDownList(
+                $languages,
+                ['prompt' => 'Тілдік топты таңдаңыз'])
+                ->label('Тілдік топ')?>
+        </div>
+        <div class="col-lg-4">
+            <?= $form->field($model, 'version')->textInput()->label('Нұсқа') ?>
+        </div>
+    </div>
 
-    <?= $form->field($model, 'language')->dropDownList(
-        $languages,
-        ['prompt' => 'Тілдік топты таңдаңыз'])
-        ->label('Тілдік топ')?>
 
-    <?= $form->field($model, 'version')->textInput()->label('Нұсқа') ?>
 
     <div class="row">
         <div class="col-lg-4">
-            <?= $form->field($model, 'start_time')->widget(DateTimePicker::classname(), [
-                'options' => ['placeholder' => 'Күнін және уақытын таңдаңыз'],
-                'pluginOptions' => [
-                    'autoclose' => true,
-                    'format' => 'yyyy-mm-dd hh:ii',
-                    'todayHighlight' => true
-                ]
-            ])->label('Ашылуы');?>
+            <?= $form->field($model, 'file')
+                ->input('file', ['class' => 'form-control'])
+                ->label('Тест') ?>
         </div>
 
         <div class="col-lg-4">
-            <?= $form->field($model, 'end_time')->widget(DateTimePicker::classname(), [
-                'options' => ['placeholder' => 'Күнін және уақытын таңдаңыз'],
+            <?= $form->field($model, 'date')->widget(DateTimePicker::classname(), [
+                'options' => ['placeholder' => 'Күнін таңдаңыз'],
                 'pluginOptions' => [
                     'autoclose' => true,
-                    'format' => 'yyyy-mm-dd hh:ii',
-                    'todayHighlight' => true
+                    'format' => 'yyyy-mm-dd',
+                    'todayHighlight' => true,
+                    'minView' => 2,
+                    'startView' => 2,
+                    'showMeridian' => false,
                 ]
-            ])->label('Жабылуы');?>
+            ])->label('Өтілім күні');?>
         </div>
 
         <div class="col-lg-4">

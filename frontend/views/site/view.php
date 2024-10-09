@@ -2,9 +2,8 @@
 
 use common\models\Answer;
 use common\models\Question;
+use common\models\Teacher;
 use common\models\TeacherAnswer;
-use yii\bootstrap5\ActiveForm;
-use yii\db\Expression;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\web\View;
@@ -13,7 +12,7 @@ use yii\web\YiiAsset;
 /** @var $this */
 /** @var $test */
 /** @var $question*/
-/** @var $startTime*/
+/** @var $testTaker*/
 
 $this->title = $test->title;
 YiiAsset::register($this);
@@ -24,11 +23,11 @@ $totalDurationInSeconds = ($durationArray[0] * 3600) + ($durationArray[1] * 60) 
 $totalDurationInSeconds = max($totalDurationInSeconds, 0);
 
 // Create DateTime objects for start time and current time
-$startTime2 = new DateTime($startTime->start_time); // Assuming $startTimeModel->start_time is in 'Y-m-d H:i:s' format
+$startTime = new DateTime($testTaker->start_time);
 $currentTime = new DateTime('now');
 
 // Calculate the elapsed time in seconds
-$elapsedTimeInSeconds = $currentTime->getTimestamp() - $startTime2->getTimestamp();
+$elapsedTimeInSeconds = $currentTime->getTimestamp() - $startTime->getTimestamp();
 
 // Calculate remaining time in seconds
 $remainingTimeInSeconds = $totalDurationInSeconds - $elapsedTimeInSeconds;
@@ -39,21 +38,23 @@ $remainingTimeInSeconds = max($remainingTimeInSeconds, 0);
 $this->registerJs("
     function startTimer(duration, display) {
         var timer = duration, hours, minutes, seconds;
+        
         var interval = setInterval(function () {
+        
             hours = parseInt(timer / 3600, 10); // Calculate hours
             minutes = parseInt((timer % 3600) / 60, 10); // Calculate minutes
             seconds = parseInt(timer % 60, 10); // Calculate seconds
-
+            
             hours = hours < 10 ? '0' + hours : hours;
             minutes = minutes < 10 ? '0' + minutes : minutes;
             seconds = seconds < 10 ? '0' + seconds : seconds;
 
             display.textContent = hours + ':' + minutes + ':' + seconds;
-
+            
             if (--timer < 0) {
-                timer = 0; // Stop at 0
-                clearInterval(interval); // Stop the timer
-                document.getElementById('myForm').submit(); // Submit the form
+                timer = 0;
+                clearInterval(interval);
+                window.location = \"" . Url::to(['site/index']) . "\";
             }
         }, 1000);
     }
@@ -93,14 +94,16 @@ $this->registerJs("
                 <form id="answerForm" action="<?= Url::to(['site/submit']) ?>" method="get">
                     <?php
                     // Find the TeacherAnswer for this question, if it exists
-                    $teacherAnswer = TeacherAnswer::findOne(['question_id' => $question->id]);
+                    $teacherAnswer = TeacherAnswer::find()
+                        ->andWhere(['teacher_id' => Teacher::findOne(['user_id' => Yii::$app->user->id])->id,
+                            'question_id' => $question->id])->one();
                     $selectedAnswerId = $teacherAnswer ? $teacherAnswer->answer_id : null;
                     ?>
 
                     <?php foreach ($answers as $a): ?>
                         <input type="radio" name="answer_id" value="<?= $a->id ?>"
                                class="form-check-input me-1"
-                            <?= $selectedAnswerId == $a->id ? 'checked' : '' // Check if the answer was previously selected ?>>
+                            <?= $selectedAnswerId == $a->id ? 'checked' : '' ?>>
                         <?php if ($a->formula): ?>
                             <!-- Display the formula image if it exists for the answer -->
                             <?= $alphabet[$index++] . '. ' ?>
@@ -122,7 +125,6 @@ $this->registerJs("
         </div>
 
         <?php
-        // Generate sample data for 50 questions
         $questions = Question::find()->andWhere(['test_id' => $test->id])->all();
         ?>
 
@@ -133,8 +135,10 @@ $this->registerJs("
                     <?php foreach ($questions as $q): ?>
                         <?php
                         // Find the corresponding TeacherAnswer, if it exists
-                        $teacherAnswer = TeacherAnswer::findOne(['question_id' => $q->id]);
-                        $backgroundColor = $teacherAnswer && $teacherAnswer->answer_id ? 'green' : 'red';
+                        $teacherAnswer2 = TeacherAnswer::find()
+                            ->andWhere(['teacher_id' => Teacher::findOne(['user_id' => Yii::$app->user->id])->id,
+                                'question_id' => $q->id])->one();
+                        $backgroundColor = $teacherAnswer2 && $teacherAnswer2->answer_id ? 'green' : 'red';
                         $borderStyle = ($q->id == $question->id) ? '5px solid black' : 'none';
                         ?>
                         <a href="<?= Url::to(['view', 'id' => $q->id]) ?>" style="text-decoration: none;">
@@ -150,7 +154,8 @@ $this->registerJs("
                 <div class="jumbotron w-100" style="text-align: center;">
                     <div id="clock" class="mt-5 mb-5" style="border: 1px solid black;
                         border-radius: 10px; font-size: 24px;"></div>
-                    <a href="<?= Url::to(['site/end']) ?>" class="btn btn-danger w-100">
+
+                    <a href="<?= Url::to(['site/end', 'id' => $test->id]) ?>" class="btn btn-danger w-100">
                         <?= Yii::t('app', 'Завершить') ?>
                     </a>
                 </div>

@@ -14,6 +14,8 @@ use yii\helpers\Html;
 
     <?= $form->field($model, 'subject')->textInput(['maxlength' => true])->label('Атауы') ?>
 
+    <?= $form->field($model, 'subject_ru')->textInput(['maxlength' => true])->label('Название') ?>
+
     <div class="form-group mt-3">
         <?= Html::submitButton(Yii::t('app', 'Сақтау'), ['class' => 'btn btn-success']) ?>
     </div>

@@ -5,10 +5,10 @@ namespace frontend\controllers;
 use common\models\Answer;
 use common\models\File;
 use common\models\Payment;
+use common\models\Percentage;
 use common\models\Question;
 use common\models\Result;
 use common\models\ResultPdf;
-use common\models\StartTime;
 use common\models\Teacher;
 use common\models\Test;
 use DateTime;
@@ -57,23 +57,28 @@ class TestController extends Controller
         $dataProvider3 = new ActiveDataProvider([
             'query' => Test::find()->andWhere(['status' => 'public'])
         ]);
-        $test = Test::find()->andWhere(['status' => 'public'])->all();
-        foreach ($test as $test) {
-            if (new DateTime() >= new DateTime($test->end_time)) {
-                $test->status = 'finished';
-                $test->save(false);
-            }
-        }
 
         $dataProvider4 = new ActiveDataProvider([
             'query' => Test::find()->andWhere(['status' => 'finished'])
         ]);
+
+        $dataProvider5 = new ActiveDataProvider([
+            'query' => Test::find()->andWhere(['status' => 'certificated'])
+        ]);
+
+        $percentage = Percentage::find()->one();
+
+        if ($percentage->load(Yii::$app->request->post()) && $percentage->save()) {
+            return $this->redirect(['index']);
+        }
 
         return $this->render('index', [
             'dataProvider' => $dataProvider,
             'dataProvider2' => $dataProvider2,
             'dataProvider3' => $dataProvider3,
             'dataProvider4' => $dataProvider4,
+            'dataProvider5' => $dataProvider5,
+            'percentage' => $percentage,
         ]);
     }
 
@@ -110,6 +115,11 @@ class TestController extends Controller
                     // Save the file to the specified path
                     if ($model->file->saveAs($filePath)) {
                         $model->test = $filePath;
+
+                        //save startTime and endTime
+                        $model->start_time = $model->date . ' 06:00:00';
+                        $model->end_time = $model->date . ' 23:00:00';
+
                         $model->save(false);
 
                         $linesArray = $this->parseWordDocument($filePath);
@@ -252,7 +262,7 @@ class TestController extends Controller
             $isBold = $lineData['isBold'];
 
             // Check if the line is a question (e.g., starts with a number and a dot)
-            if (preg_match('/^\s*\d+\.\s*(.+)$/u', $lineText, $matches)) {
+            if (preg_match('/^\s*\d+\s*\.?\s*(.+)$/u', $lineText, $matches)) {
 
                 // Create a new question
                 $currentQuestion = new Question();
@@ -262,7 +272,7 @@ class TestController extends Controller
 
                 $currentQuestion->save();
 
-            } elseif (preg_match('/^\s*[a-zA-Zа-яА-ЯёЁ]\s*[.)]\s*(.+)$/u', $lineText, $matches)) {
+            } elseif (preg_match('/^\s*[a-zA-Zа-яА-ЯёЁ]\s*\.?\s*(.+)$/u', $lineText, $matches)) {
                 // This is an answer
                 if ($currentQuestion !== null) {
                     $answerText = $matches[1];
@@ -303,6 +313,14 @@ class TestController extends Controller
         $test->status = 'finished';
         $test->save(false);
 
+        return $this->redirect(['view', 'id' => $id]);
+    }
+
+    public function actionPresent($id){
+        $test = Test::findOne($id);
+        $test->status = 'certificated';
+        $test->save(false);
+
         $results = new ActiveDataProvider([
             'query' => Result::find()
                 ->andWhere(['test_id' => $id])
@@ -339,27 +357,47 @@ class TestController extends Controller
             ->andWhere(['test_id' => $id])
             ->orderBy(['result' => SORT_DESC])
             ->all();
-        $firstPlace = $topResults[0] ?? null;
-        $secondPlace = $topResults[1] ?? null;
-        $thirdPlace = $topResults[2] ?? null;
 
-        if ($firstPlace) {
-            $this->certificate(Teacher::findOne($firstPlace->teacher_id), Test::findOne($id), 1);
-        }
-        if ($secondPlace) {
-            $this->certificate(Teacher::findOne($secondPlace->teacher_id), Test::findOne($id), 2);
-        }
-        if ($thirdPlace) {
-            $this->certificate(Teacher::findOne($thirdPlace->teacher_id), Test::findOne($id), 3);
-        }
+        $firstPlace = [];
+        $secondPlace = [];
+        $thirdPlace = [];
+        $goodResults = [];
+        $certificateResults = [];
 
-        if (count($topResults) >= 4) {
-            $remainingResults = array_slice($topResults, 3);
-            foreach ($remainingResults as $result) {
-                $teacher = Teacher::findOne($result->teacher_id);
-                $test = Test::findOne($id);
-                $this->certificate($teacher, $test, 4);
+        $percentage = Percentage::find()->one();
+
+        foreach ($topResults as $result) {
+            if ($result->result >= $percentage->first) {
+                $firstPlace[] = $result;
             }
+            else if ($result->result >= $percentage->second) {
+                $secondPlace[] = $result;
+            }
+            else if ($result->result >= $percentage->third) {
+                $thirdPlace[] = $result;
+            }
+            else if ($result->result >= $percentage->good) {
+                $goodResults[] = $result;
+            }
+            else if ($result->result >= $percentage->participant) {
+                $certificateResults[] = $result;
+            }
+        }
+
+        foreach ($firstPlace as $result) {
+            $this->certificate(Teacher::findOne($result->teacher_id), Test::findOne($id), 1);
+        }
+        foreach ($secondPlace as $result) {
+            $this->certificate(Teacher::findOne($result->teacher_id), Test::findOne($id), 2);
+        }
+        foreach ($thirdPlace as $result) {
+            $this->certificate(Teacher::findOne($result->teacher_id), Test::findOne($id), 3);
+        }
+        foreach ($goodResults as $result) {
+            $this->certificate(Teacher::findOne($result->teacher_id), Test::findOne($id), 4);
+        }
+        foreach ($certificateResults as $result) {
+            $this->certificate(Teacher::findOne($result->teacher_id), Test::findOne($id), 5);
         }
 
         return $this->redirect(['view', 'id' => $id]);
@@ -486,7 +524,6 @@ class TestController extends Controller
         $questions = Question::find()->where(['test_id' => $id])->all();
         $payments = Payment::find()->andWhere(['test_id' => $id])->all();
         $results = Result::find()->andWhere(['test_id' => $id])->all();
-        $startTimes = StartTime::find()->andWhere(['test_id' => $id])->all();
 
         foreach ($files as $file) {
             if(unlink($file->path)){
@@ -521,10 +558,6 @@ class TestController extends Controller
 
         foreach ($results as $result) {
             $result->delete();
-        }
-
-        foreach ($startTimes as $startTime) {
-            $startTime->delete();
         }
 
         if(unlink($test->test)){

@@ -3,11 +3,11 @@
 namespace common\models\query;
 
 /**
- * This is the ActiveQuery class for [[\common\models\StartTime]].
+ * This is the ActiveQuery class for [[\common\models\TestTaker]].
  *
- * @see \common\models\StartTime
+ * @see \common\models\TestTaker
  */
-class StartTimeQuery extends \yii\db\ActiveQuery
+class TestTakerQuery extends \yii\db\ActiveQuery
 {
     /*public function active()
     {
@@ -16,7 +16,7 @@ class StartTimeQuery extends \yii\db\ActiveQuery
 
     /**
      * {@inheritdoc}
-     * @return \common\models\StartTime[]|array
+     * @return \common\models\TestTaker[]|array
      */
     public function all($db = null)
     {
@@ -25,7 +25,7 @@ class StartTimeQuery extends \yii\db\ActiveQuery
 
     /**
      * {@inheritdoc}
-     * @return \common\models\StartTime|array|null
+     * @return \common\models\TestTaker|array|null
      */
     public function one($db = null)
     {

@@ -30,7 +30,7 @@ class Subject extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['subject'], 'required'],
+            [['subject', 'subject_ru'], 'required'],
             [['subject', 'subject_ru'], 'string', 'max' => 255],
         ];
     }

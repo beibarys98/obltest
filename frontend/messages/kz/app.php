@@ -5,4 +5,5 @@ return [
     'new' => 'жаңа',
     'finished' => 'аяқталған',
     'deleted' => 'өшірілді',
+    'certificated' => 'марапатталған'
 ];

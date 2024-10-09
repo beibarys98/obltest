@@ -107,7 +107,7 @@ class TeacherController extends Controller
             }
             $model->save(false);
 
-            return $this->redirect(['view', 'id' => $model2->id]);
+            return $this->redirect(['index']);
         }
 
         return $this->render('update', [

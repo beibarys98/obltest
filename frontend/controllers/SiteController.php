@@ -2,11 +2,9 @@
 
 namespace frontend\controllers;
 
-use common\models\Answer;
 use common\models\File;
 use common\models\Payment;
 use common\models\Result;
-use common\models\StartTime;
 use common\models\Admin;
 use common\models\Question;
 use common\models\Teacher;
@@ -15,11 +13,9 @@ use common\models\Test;
 use common\models\TestTaker;
 use frontend\models\ResendVerificationEmailForm;
 use frontend\models\VerifyEmailForm;
-use kartik\mpdf\Pdf;
 use Yii;
 use yii\base\InvalidArgumentException;
 use yii\data\ActiveDataProvider;
-use yii\db\Expression;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
@@ -29,7 +25,6 @@ use frontend\models\PasswordResetRequestForm;
 use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
 use frontend\models\ContactForm;
-use yii\web\NotFoundHttpException;
 
 /**
  * Site controller
@@ -103,19 +98,24 @@ class SiteController extends Controller
 
         //calculate the next version
         $availableVersions = Test::find()
-            ->select(['version'])
             ->andWhere(['subject_id' => $teacher->subject_id])
+            ->andWhere(['language' => $teacher->language])
+            ->andWhere(['status' => 'public'])
+            ->select(['version'])
             ->distinct()
-            ->orderBy('version') // Ensure they are in order (1, 2, 3, etc.)
+            ->orderBy('version')
             ->asArray()
             ->all();
         if(!$availableVersions){
             return $this->render('index-null');
         }
         $versions = array_column($availableVersions, 'version');
-        $testTakerCount = StartTime::find()
-            ->andWhere(['test_id' =>
-                Test::findOne(['subject_id' => $teacher->subject_id])->id])
+        $testTakerCount = TestTaker::find()
+            ->andWhere(['test_id' => Test::find()
+                ->andWhere(['subject_id' => $teacher->subject_id])
+                ->andWhere(['language' => $teacher->language])
+                ->andWhere(['status' => 'public'])
+                ->one()->id])
             ->count();
         $nextVersionIndex = $testTakerCount % count($versions);
         $nextVersion = $versions[$nextVersionIndex];
@@ -125,8 +125,20 @@ class SiteController extends Controller
             ->andWhere(['subject_id' => $teacher->subject_id])
             ->andWhere(['language' => $teacher->language])
             ->andWhere(['version' => $nextVersion])
-            ->andWhere(['status' => ['public', 'finished']])
+            ->andWhere(['status' => ['public', 'finished', 'certificated']])
             ->one();
+
+        //new test taker
+        $testTaker = TestTaker::find()
+            ->andWhere(['teacher_id' => $teacher->id])
+            ->andWhere(['test_id' => $test->id])
+            ->one();
+        if(!$testTaker){
+            $testTaker = new TestTaker();
+            $testTaker->teacher_id = $teacher->id;
+            $testTaker->test_id = $test->id;
+            $testTaker->save(false);
+        }
 
         //find the certificate
         $certificate = new ActiveDataProvider([
@@ -140,12 +152,11 @@ class SiteController extends Controller
         $now = new \DateTime();
         $startTime = new \DateTime($test->start_time);
         $endTime = new \DateTime($test->end_time);
-        $hasFile = File::find()
-            ->andWhere(['teacher_id' => $teacher->id])
-            ->andWhere(['test_id' => $test->id])
-            ->exists();
-        $isActive = $now >= $startTime && $now<= $endTime
-            && $test->status == 'public' && !$hasFile;
+        $isActive = $now >= $startTime
+            && $now <= $endTime
+            && $test->status == 'public'
+            && !$testTaker->end_time;
+
         $hasPaid = Payment::find()
             ->andWhere(['teacher_id' => $teacher->id])
             ->andWhere(['test_id' => $test->id])
@@ -164,22 +175,19 @@ class SiteController extends Controller
         $question = Question::findOne([$id]);
         $test = Test::findOne($question->test_id);
 
-        $startTime = StartTime::find()
+        $testTaker = TestTaker::find()
             ->andWhere(['teacher_id' => Teacher::findOne(['user_id' => Yii::$app->user->id])->id])
             ->andWhere(['test_id' => $test->id])
             ->one();
-        if(!$startTime){
-            $startTime = new StartTime();
-            $startTime->teacher_id = Teacher::findOne(['user_id' => Yii::$app->user->id])->id;
-            $startTime->test_id = $test->id;
-            $startTime->start_time = (new \DateTime())->format('Y-m-d H:i:s'); // Use PHP DateTime to get the current time in the correct format
-            $startTime->save(false);
+        if(!$testTaker->start_time){
+            $testTaker->start_time = (new \DateTime())->format('Y-m-d H:i:s');
+            $testTaker->save(false);
         }
 
-        return $this->render('view', [
+        return $this->render('/site/view', [
             'test' => $test,
             'question' => $question,
-            'startTime' => $startTime,
+            'testTaker' => $testTaker,
         ]);
     }
 
@@ -188,46 +196,63 @@ class SiteController extends Controller
         $answerId = Yii::$app->request->get('answer_id');
         $questionId = Yii::$app->request->get('question_id');
 
-        // Get the current teacher's ID
         $teacherId = Teacher::findOne(['user_id' => Yii::$app->user->id])->id;
-
-        // Check if a TeacherAnswer already exists for this teacher and question
         $teacherAnswer = TeacherAnswer::findOne([
             'teacher_id' => $teacherId,
             'question_id' => $questionId,
         ]);
 
         if (!$teacherAnswer) {
-            // If no record exists, create a new one
             $teacherAnswer = new TeacherAnswer();
             $teacherAnswer->teacher_id = $teacherId;
             $teacherAnswer->question_id = $questionId;
         }
-
-        // Update the answer_id (whether it's an update or new record)
         $teacherAnswer->answer_id = $answerId;
+        $teacherAnswer->save(false);
 
-        // Save the record (insert or update)
-        $teacherAnswer->save();
+        $nextQuestion = Question::find()
+            ->andWhere(['test_id' => Question::findOne($questionId)->test_id])
+            ->andWhere(['>', 'id', $questionId])
+            ->orderBy(['id' => SORT_ASC])
+            ->one();
 
-        return $this->redirect(['site/view', 'id' => $questionId]);
+        if (!$nextQuestion) {
+            $nextQuestion = Question::find()
+                ->andWhere(['test_id' => Question::findOne($questionId)->test_id])
+                ->orderBy(['id' => SORT_ASC])
+                ->one();
+        }
+
+        return $this->redirect(['site/view', 'id' => $nextQuestion->id]);
     }
 
-    public function actionEnd(){
-        $test = Test::findOne(Yii::$app->request->post('test_id'));
+    public function actionEnd($id){
+        $test = Test::findOne($id);
         $questions = Question::find()->andWhere(['test_id' => $test->id])->all();
-        $postData = Yii::$app->request->post('answers', []);
         $teacher = Teacher::findOne(['user_id' => Yii::$app->user->id]);
+
+        //
+        $testTaker = TestTaker::find()
+            ->andWhere(['teacher_id' => Teacher::findOne(['user_id' => Yii::$app->user->id])->id])
+            ->andWhere(['test_id' => $test->id])
+            ->one();
+        $testTaker->end_time = (new \DateTime())->format('Y-m-d H:i:s');
+        $testTaker->save(false);
 
         //save results in db
         $score = 0;
         foreach ($questions as $q) {
-            // Get the answer from the post data or set it to an empty string if not set
-            $userAnswer = isset($postData[$q->id]) ? $postData[$q->id] : '';
+            // Find the TeacherAnswer
+            $teacherAnswerModel = TeacherAnswer::findOne(['teacher_id' => $teacher->id, 'question_id' => $q->id]);
 
-            // Check if the user's answer matches the correct answer
-            if ($userAnswer == Answer::findOne($q->correct_answer)->answer) {
-                $score++;
+            // Check if a TeacherAnswer exists
+            if ($teacherAnswerModel !== null) {
+                $teacherAnswer = $teacherAnswerModel->answer_id;
+
+                // Compare if the teacher's answer matches the correct answer
+                if ($teacherAnswer == $q->correct_answer) {
+                    $score++;
+                }
             }
         }
         $result = new Result();
@@ -236,34 +261,34 @@ class SiteController extends Controller
         $result->result = $score;
         $result->save(false);
 
-        //save results in pdf
-        $content = $this->renderPartial('report', [
-            'test' => $test,
-            'questions' => $questions,
-            'answers' => $postData
-        ]);
+//        //save results in pdf
+//        $content = $this->renderPartial('report', [
+//            'test' => $test,
+//            'questions' => $questions,
+//            'answers' => $postData
+//        ]);
+//
+//        $pdf = new Pdf([
+//            'mode' => Pdf::MODE_UTF8,
+//            'content' => $content,
+//            'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
+//            'cssInline' => '.kv-heading-1{font-size:18px}'
+//        ]);
+//
+//        //save pdf in db
+//        $pdfOutput = $pdf->render();
+//        $pdfFilePath = Yii::getAlias('@webroot/reports/')
+//            . Yii::$app->security->generateRandomString(8)
+//            . '.pdf';
+//        file_put_contents($pdfFilePath, $pdfOutput);
+//
+//        $report = new File();
+//        $report->teacher_id = $teacher->id;
+//        $report->test_id = $test->id;
+//        $report->path = $pdfFilePath;
+//        $report->save(false);
 
-        $pdf = new Pdf([
-            'mode' => Pdf::MODE_UTF8,
-            'content' => $content,
-            'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
-            'cssInline' => '.kv-heading-1{font-size:18px}'
-        ]);
-
-        //save pdf in db
-        $pdfOutput = $pdf->render();
-        $pdfFilePath = Yii::getAlias('@webroot/reports/')
-            . Yii::$app->security->generateRandomString(8)
-            . '.pdf';
-        file_put_contents($pdfFilePath, $pdfOutput);
-
-        $report = new File();
-        $report->teacher_id = $teacher->id;
-        $report->test_id = $test->id;
-        $report->path = $pdfFilePath;
-        $report->save(false);
-
-        return $this->redirect(['detail-view', 'id' => $test->id]);
+        return $this->redirect(['/site/index']);
     }
 
     public function actionDownload($id)

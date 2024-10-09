@@ -29,6 +29,7 @@ use Yii;
 class Test extends \yii\db\ActiveRecord
 {
     public $file;
+    public $date;
 
     /**
      * {@inheritdoc}
@@ -44,8 +45,9 @@ class Test extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['title', 'subject_id', 'test', 'language', 'version', 'start_time', 'end_time', 'duration'], 'required'],
-            [['file'], 'file', 'skipOnEmpty' => false, 'extensions' => 'doc, docx'],
+            [['date'], 'date', 'format' => 'php:Y-m-d', 'message' => 'Күні yyyy-mm-dd форматында болуы тиіс.'],
+            [['title', 'subject_id', 'test', 'language', 'version', 'date', 'start_time', 'end_time', 'duration'], 'required'],
+            [['file'], 'file', 'skipOnEmpty' => false, 'extensions' => 'docx'],
             [['version'], 'match', 'pattern' => '/^\d+$/', 'message' => 'Нұсқа тек сан бола алады.'],
             [['subject_id', 'version'], 'integer'],
             [['start_time', 'end_time', 'duration'], 'safe'],

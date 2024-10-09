@@ -44,6 +44,11 @@ $this->title = Yii::t('app', 'Мұғалімдер');
                 'value' => 'subject.subject'
             ],
             [
+                'attribute' => 'language',
+                'label' => 'Тіл тобы',
+                'value' => 'language'
+            ],
+            [
                 'class' => ActionColumn::className(),
                 'template' => '{update} {delete}',
                 'urlCreator' => function ($action, Teacher $model, $key, $index, $column) {
