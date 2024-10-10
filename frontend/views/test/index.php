@@ -73,9 +73,9 @@ $this->title = Yii::t('app', Yii::$app->name)
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::a(Html::tag('div', $model->title, [
-                                'style' => 'display: -webkit-box; -webkit-line-clamp: 2; 
+                                'style' => 'display: -webkit-box; -webkit-line-clamp: 3; 
                                     -webkit-box-orient: vertical; overflow: hidden; 
-                                    text-overflow: ellipsis; max-height: 3em; line-height: 1.5em; width: 120px;']),
+                                    text-overflow: ellipsis; max-height: 4.5em; line-height: 1.5em; width: 120px;']),
                                 ['view', 'id' => $model->id], ['title' => $model->title,]);
                         },
                     ],
@@ -83,9 +83,10 @@ $this->title = Yii::t('app', Yii::$app->name)
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::tag('div', $model->subject->subject, [
-                                'style' => 'width: 120px; display: block; overflow: hidden;
-                                text-overflow: ellipsis; max-height: 3em; line-height: 1.5em;'
-                            ]);
+                                    'style' => 'width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'
+                                ])
+                                . Html::tag('div', 'Тілдік топ: '.$model-> language, [])
+                                . Html::tag('div', 'Нұсқа: ' . $model->version);
                         },
                     ],
                     [
@@ -113,9 +114,9 @@ $this->title = Yii::t('app', Yii::$app->name)
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::a(Html::tag('div', $model->title, [
-                                'style' => 'display: -webkit-box; -webkit-line-clamp: 2; 
+                                'style' => 'display: -webkit-box; -webkit-line-clamp: 3; 
                                     -webkit-box-orient: vertical; overflow: hidden; 
-                                    text-overflow: ellipsis; max-height: 3em; line-height: 1.5em; width: 120px;']),
+                                    text-overflow: ellipsis; max-height: 4.5em; line-height: 1.5em; width: 120px;']),
                                 ['view', 'id' => $model->id], ['title' => $model->title,]);
                         },
                     ],
@@ -123,9 +124,10 @@ $this->title = Yii::t('app', Yii::$app->name)
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::tag('div', $model->subject->subject, [
-                                'style' => 'width: 120px; display: block; overflow: hidden;
-                                text-overflow: ellipsis; max-height: 3em; line-height: 1.5em;'
-                            ]);
+                                'style' => 'width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'
+                            ])
+                                . Html::tag('div', 'Тілдік топ: '.$model-> language, [])
+                                . Html::tag('div', 'Нұсқа: ' . $model->version);
                         },
                     ],
                     [
@@ -153,9 +155,9 @@ $this->title = Yii::t('app', Yii::$app->name)
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::a(Html::tag('div', $model->title, [
-                                'style' => 'display: -webkit-box; -webkit-line-clamp: 2; 
+                                'style' => 'display: -webkit-box; -webkit-line-clamp: 3; 
                                     -webkit-box-orient: vertical; overflow: hidden; 
-                                    text-overflow: ellipsis; max-height: 3em; line-height: 1.5em; width: 120px;']),
+                                    text-overflow: ellipsis; max-height: 4.5em; line-height: 1.5em; width: 120px;']),
                                 ['view', 'id' => $model->id], ['title' => $model->title,]);
                         },
                     ],
@@ -163,9 +165,10 @@ $this->title = Yii::t('app', Yii::$app->name)
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::tag('div', $model->subject->subject, [
-                                'style' => 'width: 120px; display: block; overflow: hidden;
-                                text-overflow: ellipsis; max-height: 3em; line-height: 1.5em;'
-                            ]);
+                                    'style' => 'width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'
+                                ])
+                                . Html::tag('div', 'Тілдік топ: '.$model-> language, [])
+                                . Html::tag('div', 'Нұсқа: ' . $model->version);
                         },
                     ],
                     [
@@ -196,9 +199,9 @@ $this->title = Yii::t('app', Yii::$app->name)
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::a(Html::tag('div', $model->title, [
-                                'style' => 'display: -webkit-box; -webkit-line-clamp: 2; 
+                                'style' => 'display: -webkit-box; -webkit-line-clamp: 3; 
                                     -webkit-box-orient: vertical; overflow: hidden; 
-                                    text-overflow: ellipsis; max-height: 3em; line-height: 1.5em; width: 200px;']),
+                                    text-overflow: ellipsis; max-height: 4.5em; line-height: 1.5em; width: 200px;']),
                                 ['view', 'id' => $model->id], ['title' => $model->title,]);
                         },
                     ],
@@ -206,9 +209,10 @@ $this->title = Yii::t('app', Yii::$app->name)
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::tag('div', $model->subject->subject, [
-                                'style' => 'width: 200px; display: block; overflow: hidden;
-                                text-overflow: ellipsis; max-height: 3em; line-height: 1.5em;'
-                            ]);
+                                    'style' => 'width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'
+                                ])
+                                . Html::tag('div', 'Тілдік топ: '.$model-> language, [])
+                                . Html::tag('div', 'Нұсқа: ' . $model->version);
                         },
                     ],
                     [
@@ -236,9 +240,9 @@ $this->title = Yii::t('app', Yii::$app->name)
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::a(Html::tag('div', $model->title, [
-                                'style' => 'display: -webkit-box; -webkit-line-clamp: 2; 
+                                'style' => 'display: -webkit-box; -webkit-line-clamp: 3; 
                                     -webkit-box-orient: vertical; overflow: hidden; 
-                                    text-overflow: ellipsis; max-height: 3em; line-height: 1.5em; width: 200px;']),
+                                    text-overflow: ellipsis; max-height: 4.5em; line-height: 1.5em; width: 200px;']),
                                 ['view', 'id' => $model->id], ['title' => $model->title,]);
                         },
                     ],
@@ -246,9 +250,10 @@ $this->title = Yii::t('app', Yii::$app->name)
                         'format' => 'raw',
                         'value' => function ($model) {
                             return Html::tag('div', $model->subject->subject, [
-                                'style' => 'width: 200px; display: block; overflow: hidden;
-                                text-overflow: ellipsis; max-height: 3em; line-height: 1.5em;'
-                            ]);
+                                    'style' => 'width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'
+                                ])
+                                . Html::tag('div', 'Тілдік топ: '.$model-> language, [])
+                                . Html::tag('div', 'Нұсқа: ' . $model->version);
                         },
                     ],
                     [

@@ -2,15 +2,19 @@
 
 namespace frontend\controllers;
 
+use common\models\Admin;
 use common\models\Answer;
 use common\models\File;
+use common\models\Formula;
 use common\models\Payment;
 use common\models\Percentage;
 use common\models\Question;
 use common\models\Result;
 use common\models\ResultPdf;
 use common\models\Teacher;
+use common\models\TeacherAnswer;
 use common\models\Test;
+use common\models\TestTaker;
 use DateTime;
 use DOMDocument;
 use DOMXPath;
@@ -46,6 +50,10 @@ class TestController extends Controller
 
     public function actionIndex()
     {
+        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
         $dataProvider = new ActiveDataProvider([
             'query' => Test::find()->andWhere(['status' => 'new']),
         ]);
@@ -84,6 +92,10 @@ class TestController extends Controller
 
     public function actionView($id)
     {
+        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
         $test = Test::findOne($id);
         if (new DateTime() >= new DateTime($test->end_time)) {
             $test->status = 'finished';
@@ -101,6 +113,10 @@ class TestController extends Controller
 
     public function actionCreate()
     {
+        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
         $model = new Test();
 
         if ($this->request->isPost) {
@@ -175,6 +191,12 @@ class TestController extends Controller
 
         // Repackage the .docx file with the updated XML content
         $newFilePath = 'uploads/' . Yii::$app->security->generateRandomString(8) . '.docx';
+
+        $tempFile = new ResultPdf();
+        $tempFile->test_id = Test::findOne(['test' => $filePath])->id;
+        $tempFile->path = $newFilePath;
+        $tempFile->save(false);
+
         $newZip = new ZipArchive;
         if ($newZip->open($newFilePath, ZipArchive::CREATE) === TRUE) {
             $newZip->addFromString('word/document.xml', $modifiedXmlContent);
@@ -272,7 +294,7 @@ class TestController extends Controller
 
                 $currentQuestion->save();
 
-            } elseif (preg_match('/^\s*[a-zA-Zа-яА-ЯёЁ]\s*\.?\s*(.+)$/u', $lineText, $matches)) {
+            } elseif (preg_match('/^\s*[a-zA-Zа-яА-ЯёЁ]\s*[\.\)]?\s*(.+)$/u', $lineText, $matches)) {
                 // This is an answer
                 if ($currentQuestion !== null) {
                     $answerText = $matches[1];
@@ -293,6 +315,10 @@ class TestController extends Controller
 
     public function actionReady($id): \yii\web\Response
     {
+        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
         $test = Test::findOne($id);
         $test->status = 'ready';
         $test->save(false);
@@ -300,7 +326,12 @@ class TestController extends Controller
         return $this->redirect(['view', 'id' => $id]);
     }
 
-    public function actionPublish($id){
+    public function actionPublish($id)
+    {
+        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
         $test = Test::findOne($id);
         $test->status = 'public';
         $test->save(false);
@@ -308,7 +339,12 @@ class TestController extends Controller
         return $this->redirect(['view', 'id' => $id]);
     }
 
-    public function actionEnd($id){
+    public function actionEnd($id)
+    {
+        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
         $test = Test::findOne($id);
         $test->status = 'finished';
         $test->save(false);
@@ -316,7 +352,12 @@ class TestController extends Controller
         return $this->redirect(['view', 'id' => $id]);
     }
 
-    public function actionPresent($id){
+    public function actionPresent($id)
+    {
+        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
         $test = Test::findOne($id);
         $test->status = 'certificated';
         $test->save(false);
@@ -405,7 +446,14 @@ class TestController extends Controller
 
     public function actionResult($id)
     {
-        $file = ResultPdf::findOne(['test_id' => $id]);
+        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
+        $file = ResultPdf::find()
+            ->andWhere(['test_id' => $id])
+            ->andWhere(['like', 'path', '%.pdf', false])
+            ->one();
         return Yii::$app->response->sendFile($file->path, 'Нәтиже.pdf');
     }
 
@@ -431,17 +479,11 @@ class TestController extends Controller
         $certificate->save(false);
     }
 
-    public function actionFormula($id){
-        $test = Test::findOne($id);
-        $questions = Question::find()->andWhere(['test_id' => $id])->all();
-
-        return $this->render('formula', [
-            'test' => $test,
-            'questions' => $questions,
-        ]);
-    }
-
-    public function actionAddFormula($id, $type){
+    public function actionAddFormula($id, $type)
+    {
+        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
 
         if($type == 'question'){
             $model = Question::findOne($id);
@@ -456,18 +498,16 @@ class TestController extends Controller
                 if (Yii::$app->request->isPost) {
                     $model->file = UploadedFile::getInstance($model, 'file');
 
-                    if ($model->validate()) {
-                        $filePath = 'formulas/'
-                            . Yii::$app->security->generateRandomString(8)
-                            . '.'. $model->file->extension;
+                    $filePath = 'formulas/'
+                        . Yii::$app->security->generateRandomString(8)
+                        . '.'. $model->file->extension;
 
-                        // Save the file to the specified path
-                        if ($model->file->saveAs($filePath)) {
-                            $model->formula = $filePath;
-                            $model->save(false);
+                    // Save the file to the specified path
+                    if ($model->file->saveAs($filePath)) {
+                        $model->formula = $filePath;
+                        $model->save(false);
 
-                            return $this->redirect(['view', 'id' => $tid]);
-                        }
+                        return $this->redirect(['view', 'id' => $tid]);
                     }
                 }
             }
@@ -479,51 +519,28 @@ class TestController extends Controller
         ]);
     }
 
-    public function actionDeleteFormula($id, $test_id){
+    public function actionDeleteFormula($id, $test_id)
+    {
+        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
 
         return $this->redirect(['formula', 'id' => $test_id]);
     }
 
-    public function actionUpdate($id)
-    {
-        $model = $this->findModel($id);
-        $model2 = Question::find()->andWhere(['test_id' => $id])->all();
-
-        $dataArray = Yii::$app->request->post('data');
-
-        if (!empty($dataArray)) {
-            foreach ($dataArray as $id => $value) {
-                $questionModel = Question::findOne($id);
-                if ($questionModel) {
-                    $questionModel->question = $value['question'];
-                    $questionModel->answer1 = $value['answer1'];
-                    $questionModel->answer2 = $value['answer2'];
-                    $questionModel->answer3 = $value['answer3'];
-                    $questionModel->answer4 = $value['answer4'];
-                    $questionModel->correct_answer = $value['correct_answer'];
-                    $questionModel->save(false);
-                }
-            }
-            if ($this->request->isPost && $model->load($this->request->post())) {
-                $model->save(false);
-
-                return $this->redirect(['view', 'id' => $model->id]);
-            }
-        }
-
-        return $this->render('update', [
-            'model' => $model,
-            'model2' => $model2,
-        ]);
-    }
-
     public function actionDelete($id)
     {
+        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
         $test = Test::findOne($id);
         $files = File::find()->andWhere(['test_id' => $id])->all();
-        $questions = Question::find()->where(['test_id' => $id])->all();
         $payments = Payment::find()->andWhere(['test_id' => $id])->all();
+        $questions = Question::find()->where(['test_id' => $id])->all();
         $results = Result::find()->andWhere(['test_id' => $id])->all();
+        $resultPdfs = ResultPdf::find()->andWhere(['test_id' => $id])->all();
+        $testTakers = TestTaker::find()->andWhere(['test_id' => $id])->all();
 
         foreach ($files as $file) {
             if(unlink($file->path)){
@@ -531,33 +548,44 @@ class TestController extends Controller
             }
         }
 
-        foreach ($questions as $question) {
-            // Fetch associated answers
-            $answers = Answer::find()->andWhere(['question_id' => $question->id])->all();
-
-            // Delete each associated answer
-            foreach ($answers as $a) {
-                $a->delete();
-            }
-
-            // Attempt to delete the associated file if it exists
-            $question->delete();
-        }
-
-        // Loop through each payment to delete associated files and records
         foreach ($payments as $payment) {
-            // Check if the file exists before attempting to delete
             if (file_exists($payment->payment)) {
-                // Attempt to delete the file
                 if (unlink($payment->payment)) {
-                    // File deleted successfully, now delete the record
                     $payment->delete();
                 }
             }
         }
 
+        foreach ($questions as $question) {
+            $answers = Answer::find()->andWhere(['question_id' => $question->id])->all();
+            foreach ($answers as $a) {
+                if($a->formula){
+                    unlink($a->formula);
+                }
+                $a->delete();
+            }
+            $teacherAnswers = TeacherAnswer::find()->andWhere(['question_id' => $question->id])->all();
+            foreach ($teacherAnswers as $tA) {
+                $tA->delete();
+            }
+            if($question->formula){
+                unlink($question->formula);
+            }
+            $question->delete();
+        }
+
         foreach ($results as $result) {
             $result->delete();
+        }
+
+        foreach ($resultPdfs as $rP) {
+            if(unlink($rP->path)){
+                $rP->delete();
+            }
+        }
+
+        foreach ($testTakers as $tT) {
+            $tT->delete();
         }
 
         if(unlink($test->test)){

@@ -89,8 +89,8 @@ class SiteController extends Controller
             return $this->redirect(['login']);
         }
 
-        if(Admin::findOne(Yii::$app->user->id)){
-            return $this->redirect(['test/index']);
+        if(Admin::findOne(Yii::$app->user->identity->id)){
+            return $this->redirect(['/test/index']);
         }
 
         //find the teacher
@@ -110,30 +110,35 @@ class SiteController extends Controller
             return $this->render('index-null');
         }
         $versions = array_column($availableVersions, 'version');
+        $testIds = Test::find()
+            ->select('id')
+            ->andWhere(['subject_id' => $teacher->subject_id])
+            ->andWhere(['language' => $teacher->language])
+            ->andWhere(['status' => 'public'])
+            ->column();
         $testTakerCount = TestTaker::find()
-            ->andWhere(['test_id' => Test::find()
-                ->andWhere(['subject_id' => $teacher->subject_id])
-                ->andWhere(['language' => $teacher->language])
-                ->andWhere(['status' => 'public'])
-                ->one()->id])
+            ->andWhere(['test_id' => $testIds])
             ->count();
         $nextVersionIndex = $testTakerCount % count($versions);
         $nextVersion = $versions[$nextVersionIndex];
 
-        //find the test
-        $test = Test::find()
-            ->andWhere(['subject_id' => $teacher->subject_id])
-            ->andWhere(['language' => $teacher->language])
-            ->andWhere(['version' => $nextVersion])
-            ->andWhere(['status' => ['public', 'finished', 'certificated']])
-            ->one();
+        //find test taker
+        $testTaker = TestTaker::findOne(['teacher_id' => $teacher->id]);
+        if($testTaker){
+            $test = Test::find()
+                ->andWhere(['subject_id' => $teacher->subject_id])
+                ->andWhere(['language' => $teacher->language])
+                ->andWhere(['version' => $testTaker->test->version])
+                ->andWhere(['status' => ['public', 'finished', 'certificated']])
+                ->one();
+        } else {
+            $test = Test::find()
+                ->andWhere(['subject_id' => $teacher->subject_id])
+                ->andWhere(['language' => $teacher->language])
+                ->andWhere(['version' => $nextVersion])
+                ->andWhere(['status' => ['public', 'finished', 'certificated']])
+                ->one();
 
-        //new test taker
-        $testTaker = TestTaker::find()
-            ->andWhere(['teacher_id' => $teacher->id])
-            ->andWhere(['test_id' => $test->id])
-            ->one();
-        if(!$testTaker){
             $testTaker = new TestTaker();
             $testTaker->teacher_id = $teacher->id;
             $testTaker->test_id = $test->id;
@@ -231,7 +236,18 @@ class SiteController extends Controller
         $questions = Question::find()->andWhere(['test_id' => $test->id])->all();
         $teacher = Teacher::findOne(['user_id' => Yii::$app->user->id]);
 
-        //
+        $unansweredQuestion = Question::find()
+            ->leftJoin('teacher_answer', 'question.id = teacher_answer.question_id')
+            ->andWhere(['question.test_id' => $id])
+            ->andWhere(['teacher_answer.id' => null])
+            ->one();
+
+        if ($unansweredQuestion) {
+            Yii::$app->session->setFlash('warning', Yii::t('app', 'Ответьте на все вопросы!'));
+            return $this->redirect(['site/view', 'id' => $unansweredQuestion->id]);
+        }
+
+        //save end time
         $testTaker = TestTaker::find()
             ->andWhere(['teacher_id' => Teacher::findOne(['user_id' => Yii::$app->user->id])->id])
             ->andWhere(['test_id' => $test->id])
@@ -242,14 +258,9 @@ class SiteController extends Controller
         //save results in db
         $score = 0;
         foreach ($questions as $q) {
-            // Find the TeacherAnswer
             $teacherAnswerModel = TeacherAnswer::findOne(['teacher_id' => $teacher->id, 'question_id' => $q->id]);
-
-            // Check if a TeacherAnswer exists
             if ($teacherAnswerModel !== null) {
                 $teacherAnswer = $teacherAnswerModel->answer_id;
-
-                // Compare if the teacher's answer matches the correct answer
                 if ($teacherAnswer == $q->correct_answer) {
                     $score++;
                 }

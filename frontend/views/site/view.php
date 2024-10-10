@@ -4,6 +4,7 @@ use common\models\Answer;
 use common\models\Question;
 use common\models\Teacher;
 use common\models\TeacherAnswer;
+use common\widgets\Alert;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\web\View;
@@ -69,6 +70,8 @@ $this->registerJs("
 
 <div class="test-view">
 
+    <?= Alert::widget() ?>
+
     <div class="d-flex">
         <div style="width: 70%;" class="p-3">
             <div class="p-3" style="border: 1px solid black; border-radius: 10px; font-size: 24px;
@@ -86,9 +89,10 @@ $this->registerJs("
                 <?php
                 $answers = Answer::find()
                     ->andWhere(['question_id' => $question->id])
+                    ->orderBy('RAND()')
                     ->all();
-                $alphabet = range('A', 'Z'); // Array of alphabet letters
-                $index = 0; // Initialize index for letters
+                $alphabet = range('A', 'Z');
+                $index = 0;
                 ?>
 
                 <form id="answerForm" action="<?= Url::to(['site/submit']) ?>" method="get">
