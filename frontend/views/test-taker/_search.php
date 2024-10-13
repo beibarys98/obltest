@@ -1,5 +1,7 @@
 <?php
 
+use common\models\Subject;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
@@ -18,17 +20,29 @@ use yii\widgets\ActiveForm;
         ],
     ]); ?>
 
-    <?= $form->field($model, 'id') ?>
+    <?php
+    $subjectField = (Yii::$app->language === 'ru-RU') ? 'subject_ru' : 'subject';
+    $subjects = ArrayHelper::map(Subject::find()->all(), 'id', $subjectField);
+    ?>
 
-    <?= $form->field($model, 'teacher_id') ?>
+    <?= $form->field($model, 'subject')->dropDownList(
+        $subjects,
+        ['prompt' => Yii::t('app', 'Выберите предмет')])
+        ->label(Yii::t('app', 'Предмет')) ?>
 
-    <?= $form->field($model, 'test_id') ?>
+    <?php
+    $languages = [
+        'kz' => Yii::t('app', 'казахская группа'),
+        'ru' => Yii::t('app', 'русская группа'),
+    ];
+    ?>
 
-    <?= $form->field($model, 'start_time') ?>
+    <?= $form->field($model, 'language')->dropDownList(
+        $languages,
+        ['prompt' => Yii::t('app', 'Выберите языковую группу')])
+        ->label(Yii::t('app', 'Языковая группа'))?>
 
-    <?= $form->field($model, 'end_time') ?>
-
-    <div class="form-group">
+    <div class="form-group mt-3 mb-3">
         <?= Html::submitButton(Yii::t('app', 'Search'), ['class' => 'btn btn-primary']) ?>
         <?= Html::resetButton(Yii::t('app', 'Reset'), ['class' => 'btn btn-outline-secondary']) ?>
     </div>

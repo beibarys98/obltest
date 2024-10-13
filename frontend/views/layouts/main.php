@@ -45,10 +45,10 @@ Select2Asset::register($this);
 
     if(Admin::findOne(Yii::$app->user->id)){
         $menuItems[] = ['label' => 'Мұғалімдер', 'url' => ['/teacher/index']];
-        $menuItems[] = ['label' => 'Мектептер', 'url' => ['/school/index']];
         $menuItems[] = ['label' => 'Пәндер', 'url' => ['/subject/index']];
         $menuItems[] = ['label' => 'Тесттер', 'url' => ['/test/index']];
-        $menuItems[] = ['label' => 'Төлемдер', 'url' => ['/payment/index']];
+        $menuItems[] = ['label' => 'Қатысушылар', 'url' => ['/test-taker/index/']];
+        $menuItems[] = ['label' => 'Баптаулар', 'url' => ['/test/settings/']];
     }
 
     echo Nav::widget([

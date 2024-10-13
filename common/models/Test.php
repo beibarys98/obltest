@@ -95,6 +95,11 @@ class Test extends \yii\db\ActiveRecord
         return $this->hasMany(Payment::class, ['test_id' => 'id']);
     }
 
+    public function getPayment()
+    {
+        return $this->hasMany(Payment::class, ['test_id' => 'id']);
+    }
+
     /**
      * Gets query for [[Questions]].
      *

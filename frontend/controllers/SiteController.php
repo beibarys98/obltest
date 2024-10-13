@@ -11,29 +11,17 @@ use common\models\Teacher;
 use common\models\TeacherAnswer;
 use common\models\Test;
 use common\models\TestTaker;
-use frontend\models\ResendVerificationEmailForm;
-use frontend\models\VerifyEmailForm;
+use kartik\mpdf\Pdf;
 use Yii;
-use yii\base\InvalidArgumentException;
 use yii\data\ActiveDataProvider;
-use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use common\models\LoginForm;
-use frontend\models\PasswordResetRequestForm;
-use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
-use frontend\models\ContactForm;
 
-/**
- * Site controller
- */
 class SiteController extends Controller
 {
-    /**
-     * {@inheritdoc}
-     */
     public function behaviors()
     {
         return [
@@ -62,9 +50,6 @@ class SiteController extends Controller
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function actions()
     {
         return [
@@ -78,15 +63,10 @@ class SiteController extends Controller
         ];
     }
 
-    /**
-     * Displays homepage.
-     *
-     * @return mixed
-     */
     public function actionIndex()
     {
         if(Yii::$app->user->isGuest){
-            return $this->redirect(['login']);
+            return $this->redirect(['/site/login']);
         }
 
         if(Admin::findOne(Yii::$app->user->identity->id)){
@@ -96,47 +76,48 @@ class SiteController extends Controller
         //find the teacher
         $teacher = Teacher::findOne(['user_id' => Yii::$app->user->id]);
 
-        //calculate the next version
-        $availableVersions = Test::find()
-            ->andWhere(['subject_id' => $teacher->subject_id])
-            ->andWhere(['language' => $teacher->language])
-            ->andWhere(['status' => 'public'])
-            ->select(['version'])
-            ->distinct()
-            ->orderBy('version')
-            ->asArray()
-            ->all();
-        if(!$availableVersions){
-            return $this->render('index-null');
-        }
-        $versions = array_column($availableVersions, 'version');
-        $testIds = Test::find()
-            ->select('id')
-            ->andWhere(['subject_id' => $teacher->subject_id])
-            ->andWhere(['language' => $teacher->language])
-            ->andWhere(['status' => 'public'])
-            ->column();
-        $testTakerCount = TestTaker::find()
-            ->andWhere(['test_id' => $testIds])
-            ->count();
-        $nextVersionIndex = $testTakerCount % count($versions);
-        $nextVersion = $versions[$nextVersionIndex];
-
-        //find test taker
+        //not a newbie? show the test
         $testTaker = TestTaker::findOne(['teacher_id' => $teacher->id]);
         if($testTaker){
-            $test = Test::find()
+            $test = Test::findOne($testTaker->test_id);
+        }
+
+        //newbie? the next version
+        else {
+            //how many versions of the test
+            $availableVersions = Test::find()
                 ->andWhere(['subject_id' => $teacher->subject_id])
                 ->andWhere(['language' => $teacher->language])
-                ->andWhere(['version' => $testTaker->test->version])
-                ->andWhere(['status' => ['public', 'finished', 'certificated']])
-                ->one();
-        } else {
+                ->andWhere(['status' => 'public'])
+                ->select(['version'])
+                ->distinct()
+                ->orderBy('version')
+                ->asArray()
+                ->all();
+
+            //no versions? show null
+            if(!$availableVersions){
+                return $this->render('index-null');
+            }
+
+            //there are? give the newbie the next version
+            $versions = array_column($availableVersions, 'version');
+            $testIds = Test::find()
+                ->select('id')
+                ->andWhere(['subject_id' => $teacher->subject_id])
+                ->andWhere(['language' => $teacher->language])
+                ->andWhere(['status' => 'public'])
+                ->column();
+            $testTakerCount = TestTaker::find()
+                ->andWhere(['test_id' => $testIds])
+                ->count();
+            $nextVersionIndex = $testTakerCount % count($versions);
+            $nextVersion = $versions[$nextVersionIndex];
+
             $test = Test::find()
                 ->andWhere(['subject_id' => $teacher->subject_id])
                 ->andWhere(['language' => $teacher->language])
                 ->andWhere(['version' => $nextVersion])
-                ->andWhere(['status' => ['public', 'finished', 'certificated']])
                 ->one();
 
             $testTaker = new TestTaker();
@@ -177,6 +158,10 @@ class SiteController extends Controller
 
     public function actionView($id)
     {
+        if(Yii::$app->user->isGuest){
+            return $this->redirect(['/site/login']);
+        }
+
         $question = Question::findOne([$id]);
         $test = Test::findOne($question->test_id);
 
@@ -198,6 +183,10 @@ class SiteController extends Controller
 
     public function actionSubmit()
     {
+        if(Yii::$app->user->isGuest){
+            return $this->redirect(['/site/login']);
+        }
+
         $answerId = Yii::$app->request->get('answer_id');
         $questionId = Yii::$app->request->get('question_id');
 
@@ -232,19 +221,36 @@ class SiteController extends Controller
     }
 
     public function actionEnd($id){
+        if(Yii::$app->user->isGuest){
+            return $this->redirect(['/site/login']);
+        }
+
         $test = Test::findOne($id);
         $questions = Question::find()->andWhere(['test_id' => $test->id])->all();
         $teacher = Teacher::findOne(['user_id' => Yii::$app->user->id]);
+        $testTaker = TestTaker::findOne(['teacher_id' => $teacher->id]);
 
-        $unansweredQuestion = Question::find()
-            ->leftJoin('teacher_answer', 'question.id = teacher_answer.question_id')
-            ->andWhere(['question.test_id' => $id])
-            ->andWhere(['teacher_answer.id' => null])
-            ->one();
+        //unanswered questions? return to test
+        $now = new \DateTime();
+        $startTime = new \DateTime($testTaker->start_time);
+        $testDuration = new \DateTime($test->duration);
+        $durationInSeconds =
+            ($testDuration->format('H') * 3600)
+            + ($testDuration->format('i') * 60)
+            + $testDuration->format('s');
+        $timeElapsed = $now->getTimestamp() - $startTime->getTimestamp();
 
-        if ($unansweredQuestion) {
-            Yii::$app->session->setFlash('warning', Yii::t('app', 'Ответьте на все вопросы!'));
-            return $this->redirect(['site/view', 'id' => $unansweredQuestion->id]);
+        if ($timeElapsed < $durationInSeconds) {
+            $unansweredQuestion = Question::find()
+                ->leftJoin('teacher_answer', 'question.id = teacher_answer.question_id AND teacher_answer.teacher_id = :teacher_id', [':teacher_id' => $teacher->id])
+                ->andWhere(['question.test_id' => $id])
+                ->andWhere(['teacher_answer.answer_id' => null])
+                ->one();
+
+            if ($unansweredQuestion) {
+                Yii::$app->session->setFlash('warning', Yii::t('app', 'Ответьте на все вопросы!'));
+                return $this->redirect(['site/view', 'id' => $unansweredQuestion->id]);
+            }
         }
 
         //save end time
@@ -272,47 +278,57 @@ class SiteController extends Controller
         $result->result = $score;
         $result->save(false);
 
-//        //save results in pdf
-//        $content = $this->renderPartial('report', [
-//            'test' => $test,
-//            'questions' => $questions,
-//            'answers' => $postData
-//        ]);
-//
-//        $pdf = new Pdf([
-//            'mode' => Pdf::MODE_UTF8,
-//            'content' => $content,
-//            'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
-//            'cssInline' => '.kv-heading-1{font-size:18px}'
-//        ]);
-//
-//        //save pdf in db
-//        $pdfOutput = $pdf->render();
-//        $pdfFilePath = Yii::getAlias('@webroot/reports/')
-//            . Yii::$app->security->generateRandomString(8)
-//            . '.pdf';
-//        file_put_contents($pdfFilePath, $pdfOutput);
-//
-//        $report = new File();
-//        $report->teacher_id = $teacher->id;
-//        $report->test_id = $test->id;
-//        $report->path = $pdfFilePath;
-//        $report->save(false);
+        //save report in pdf
+        $answers = TeacherAnswer::find()
+            ->andWhere(['teacher_id' => $teacher->id])
+            ->indexBy('question_id')
+            ->all();
+        $testDP = new ActiveDataProvider([
+            'query' => Test::find()
+                ->andWhere(['id' => $test->id]),
+        ]);
+        $resultDP = new ActiveDataProvider([
+            'query' => Result::find()
+                ->andWhere(['teacher_id' => $teacher->id])
+                ->andWhere(['test_id' => $test->id]),
+        ]);
+        $content2 = $this->renderPartial('report', [
+            'test' => $test,
+            'questions' => $questions,
+            'answers' => $answers,
+            'testDP' => $testDP,
+            'resultDP' => $resultDP,
+        ]);
+        $pdf2 = new Pdf([
+            'mode' => Pdf::MODE_UTF8,
+            'content' => $content2,
+            'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
+            'cssInline' => '.kv-heading-1{font-size:18px}',
+            'filename' => 'Қатемен жұмыс.pdf',
+        ]);
+        $pdf2Output = $pdf2->render();
+        $pdfFilePath2 = Yii::getAlias('@webroot/reports/')
+            . Yii::$app->security->generateRandomString(8)
+            . '.pdf';
+        file_put_contents($pdfFilePath2, $pdf2Output);
+        $report = new File();
+        $report->teacher_id = $teacher->id;
+        $report->test_id = $id;
+        $report->path = $pdfFilePath2;
+        $report->save(false);
 
         return $this->redirect(['/site/index']);
     }
 
     public function actionDownload($id)
     {
-        $file = File::findOne($id);
-        if (preg_match('/\.pdf$/i', $file->path)) {
-            $text = 'Қатемен жұмыс.pdf';
-        } elseif (preg_match('/\.(jpeg|jpg)$/i', $file->path)) {
-            $text = 'Сертификат.jpeg';
-        } else {
-            $text = $file->path;
+        if(Yii::$app->user->isGuest){
+            return $this->redirect(['/site/login']);
         }
-        return Yii::$app->response->sendFile($file->path, $text);
+
+        $file = File::findOne($id);
+
+        return Yii::$app->response->sendFile($file->path, 'Сертификат.jpeg');
     }
 
     public function actionLogin()
@@ -333,11 +349,6 @@ class SiteController extends Controller
         ]);
     }
 
-    /**
-     * Logs out the current user.
-     *
-     * @return mixed
-     */
     public function actionLogout()
     {
         Yii::$app->user->logout();
@@ -345,44 +356,6 @@ class SiteController extends Controller
         return $this->goHome();
     }
 
-    /**
-     * Displays contact page.
-     *
-     * @return mixed
-     */
-    public function actionContact()
-    {
-        $model = new ContactForm();
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            if ($model->sendEmail(Yii::$app->params['adminEmail'])) {
-                Yii::$app->session->setFlash('success', 'Thank you for contacting us. We will respond to you as soon as possible.');
-            } else {
-                Yii::$app->session->setFlash('error', 'There was an error sending your message.');
-            }
-
-            return $this->refresh();
-        }
-
-        return $this->render('contact', [
-            'model' => $model,
-        ]);
-    }
-
-    /**
-     * Displays about page.
-     *
-     * @return mixed
-     */
-    public function actionAbout()
-    {
-        return $this->render('about');
-    }
-
-    /**
-     * Signs user up.
-     *
-     * @return mixed
-     */
     public function actionSignup()
     {
         $model = new SignupForm();
@@ -399,99 +372,6 @@ class SiteController extends Controller
         return $this->render('signup', [
             'model' => $model,
             'model2' => $model2,
-        ]);
-    }
-
-    /**
-     * Requests password reset.
-     *
-     * @return mixed
-     */
-    public function actionRequestPasswordReset()
-    {
-        $model = new PasswordResetRequestForm();
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            if ($model->sendEmail()) {
-                Yii::$app->session->setFlash('success', 'Check your email for further instructions.');
-
-                return $this->goHome();
-            }
-
-            Yii::$app->session->setFlash('error', 'Sorry, we are unable to reset password for the provided email address.');
-        }
-
-        return $this->render('requestPasswordResetToken', [
-            'model' => $model,
-        ]);
-    }
-
-    /**
-     * Resets password.
-     *
-     * @param string $token
-     * @return mixed
-     * @throws BadRequestHttpException
-     */
-    public function actionResetPassword($token)
-    {
-        try {
-            $model = new ResetPasswordForm($token);
-        } catch (InvalidArgumentException $e) {
-            throw new BadRequestHttpException($e->getMessage());
-        }
-
-        if ($model->load(Yii::$app->request->post()) && $model->validate() && $model->resetPassword()) {
-            Yii::$app->session->setFlash('success', 'New password saved.');
-
-            return $this->goHome();
-        }
-
-        return $this->render('resetPassword', [
-            'model' => $model,
-        ]);
-    }
-
-    /**
-     * Verify email address
-     *
-     * @param string $token
-     * @throws BadRequestHttpException
-     * @return yii\web\Response
-     */
-    public function actionVerifyEmail($token)
-    {
-        try {
-            $model = new VerifyEmailForm($token);
-        } catch (InvalidArgumentException $e) {
-            throw new BadRequestHttpException($e->getMessage());
-        }
-        if (($user = $model->verifyEmail()) && Yii::$app->user->login($user)) {
-            Yii::$app->session->setFlash('success', 'Your email has been confirmed!');
-            return $this->goHome();
-        }
-
-        Yii::$app->session->setFlash('error', 'Sorry, we are unable to verify your account with provided token.');
-        return $this->goHome();
-    }
-
-    /**
-     * Resend verification email
-     *
-     * @return mixed
-     */
-    public function actionResendVerificationEmail()
-    {
-        $model = new ResendVerificationEmailForm();
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            if ($model->sendEmail()) {
-                Yii::$app->session->setFlash('success', 'Check your email for further instructions.');
-                return $this->goHome();
-            }
-            Yii::$app->session->setFlash('error', 'Sorry, we are unable to resend verification email for the provided email address.');
-        }
-
-        return $this->render('resendVerificationEmail', [
-            'model' => $model
         ]);
     }
 

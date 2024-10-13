@@ -1,10 +1,10 @@
 <?php
 
 use yii\helpers\Html;
-use yii\helpers\Url;
 use yii\grid\GridView;
-use yii\widgets\ActiveForm;
+use yii\bootstrap5\ActiveForm;
 use yii\widgets\Pjax;
+
 /** @var yii\web\View $this */
 /** @var common\models\TestSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
@@ -18,47 +18,15 @@ $this->title = Yii::t('app', Yii::$app->name)
 ?>
 <div class="test-index">
 
-    <h1>Тесттер</h1>
-
-    <div class="p-3 shadow-sm" style="border: 1px solid black; border-radius: 10px;">
-        <?php $form = ActiveForm::begin(); ?>
-
-        <div class="d-flex">
-            <div style="width: 20%" class="p-1">
-                <?= $form->field($percentage, 'first')->textInput()->label('Бірінші') ?>
-            </div>
-            <div style="width: 20%" class="p-1">
-                <?= $form->field($percentage, 'second')->textInput()->label('Екінші') ?>
-            </div>
-            <div style="width: 20%" class="p-1">
-                <?= $form->field($percentage, 'third')->textInput()->label('Үшінші') ?>
-            </div>
-            <div style="width: 20%" class="p-1">
-                <?= $form->field($percentage, 'good')->textInput()->label('Алғыс хат') ?>
-            </div>
-            <div style="width: 20%" class="p-1">
-                <?= $form->field($percentage, 'participant')->textInput()->label('Сертификат') ?>
-            </div>
-        </div>
-        <br>
-        <div class="form-group">
-            <?= Html::submitButton('Сақтау', ['class' => 'btn btn-primary',
-                'style' => 'width: 100px; text-align: center;']) ?>
-        </div>
-
-        <?php ActiveForm::end(); ?>
-    </div>
-
-    <br>
+    <h1 class="text-center">Тесттер</h1>
 
     <p>
-        <?= Html::a(Yii::t('app', 'Жаңа тест'), ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a(Yii::t('app', 'Жаңа тест'), ['create'], ['class' => 'btn btn-success w-100']) ?>
     </p>
 
     <?php Pjax::begin(); ?>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
-    <br>
     <div class="row">
         <div class="col-4">
 
@@ -85,17 +53,15 @@ $this->title = Yii::t('app', Yii::$app->name)
                             return Html::tag('div', $model->subject->subject, [
                                     'style' => 'width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'
                                 ])
-                                . Html::tag('div', 'Тілдік топ: '.$model-> language, [])
+                                . Html::tag('div', 'Тіл: '.$model-> language, [])
                                 . Html::tag('div', 'Нұсқа: ' . $model->version);
                         },
                     ],
                     [
                         'format' => 'raw',
                         'value' => function ($model) {
-                            return nl2br(
-                                date('d M', strtotime($model->start_time)) . "<br>" .
-                                date('H:i:s', strtotime($model->duration))
-                            );
+                            return date('d/m/y', strtotime($model->start_time)) . "<br>" .
+                                date('H:i:s', strtotime($model->duration));
                         },
                     ],
                 ],
@@ -126,17 +92,15 @@ $this->title = Yii::t('app', Yii::$app->name)
                             return Html::tag('div', $model->subject->subject, [
                                 'style' => 'width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'
                             ])
-                                . Html::tag('div', 'Тілдік топ: '.$model-> language, [])
+                                . Html::tag('div', 'Тіл: '.$model-> language, [])
                                 . Html::tag('div', 'Нұсқа: ' . $model->version);
                         },
                     ],
                     [
                         'format' => 'raw',
                         'value' => function ($model) {
-                            return nl2br(
-                                date('d M', strtotime($model->start_time)) . "<br>" .
-                                date('H:i:s', strtotime($model->duration))
-                            );
+                            return date('d/m/y', strtotime($model->start_time)) . "<br>" .
+                                date('H:i:s', strtotime($model->duration));
                         },
                     ],
                 ],
@@ -167,17 +131,15 @@ $this->title = Yii::t('app', Yii::$app->name)
                             return Html::tag('div', $model->subject->subject, [
                                     'style' => 'width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'
                                 ])
-                                . Html::tag('div', 'Тілдік топ: '.$model-> language, [])
+                                . Html::tag('div', 'Тіл: '.$model-> language, [])
                                 . Html::tag('div', 'Нұсқа: ' . $model->version);
                         },
                     ],
                     [
                         'format' => 'raw',
                         'value' => function ($model) {
-                            return nl2br(
-                                date('d M', strtotime($model->start_time)) . "<br>" .
-                                date('H:i:s', strtotime($model->duration))
-                            );
+                            return date('d/m/y', strtotime($model->start_time)) . "<br>" .
+                                date('H:i:s', strtotime($model->duration));
                         },
                     ],
                 ],
@@ -211,17 +173,15 @@ $this->title = Yii::t('app', Yii::$app->name)
                             return Html::tag('div', $model->subject->subject, [
                                     'style' => 'width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'
                                 ])
-                                . Html::tag('div', 'Тілдік топ: '.$model-> language, [])
+                                . Html::tag('div', 'Тіл: '.$model-> language, [])
                                 . Html::tag('div', 'Нұсқа: ' . $model->version);
                         },
                     ],
                     [
                         'format' => 'raw',
                         'value' => function ($model) {
-                            return nl2br(
-                                date('d M', strtotime($model->start_time)) . "<br>" .
-                                date('H:i:s', strtotime($model->duration))
-                            );
+                            return date('d/m/y', strtotime($model->start_time)) . "<br>" .
+                                date('H:i:s', strtotime($model->duration));
                         },
                     ],
                 ],
@@ -252,18 +212,21 @@ $this->title = Yii::t('app', Yii::$app->name)
                             return Html::tag('div', $model->subject->subject, [
                                     'style' => 'width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'
                                 ])
-                                . Html::tag('div', 'Тілдік топ: '.$model-> language, [])
+                                . Html::tag('div', 'Тіл: '.$model-> language, [])
                                 . Html::tag('div', 'Нұсқа: ' . $model->version);
                         },
                     ],
                     [
-                        'attribute' => 'id',
-                        'label' => 'Файл',
                         'format' => 'raw',
                         'value' => function ($model) {
-                            return Html::a('Нәтиже.pdf', Url::to(['test/result', 'id' => $model->id]), ['data-pjax' => 0]);
+                            return Html::a('Нәтиже', ['/test/result', 'id' => $model->id],
+                                [
+                                    'target' => '_blank',
+                                    'data-pjax' => 0,
+                                ]);
                         }
                     ],
+
                 ],
             ]); ?>
         </div>

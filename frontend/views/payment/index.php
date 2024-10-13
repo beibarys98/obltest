@@ -1,10 +1,7 @@
 <?php
 
-use common\models\Payment;
 use yii\bootstrap5\ActiveForm;
 use yii\helpers\Html;
-use yii\helpers\Url;
-use yii\grid\ActionColumn;
 use yii\grid\GridView;
 use yii\widgets\Pjax;
 /** @var yii\web\View $this */
@@ -43,18 +40,27 @@ $this->title = Yii::t('app', 'Төлемдер');
         'filterModel' => $searchModel,
         'columns' => [
             [
-                'attribute' => 'created_at',
-                'label' => 'Уақыты'
+                'attribute' => 'username',
+                'label' => 'Логин',
+                'value' => 'teacher.user.username'
             ],
             [
-                'attribute' => 'teacher_name',
+                'attribute' => 'name',
                 'label' => 'Т.А.Ә.',
                 'value' => 'teacher.name',
             ],
             [
-                'attribute' => 'test_subject',
+                'attribute' => 'subject',
                 'label' => 'Пән',
                 'value' => 'test.subject.subject',
+            ],
+            [
+                'attribute' => 'created_at',
+                'label' => 'Уақыты',
+                'format' => 'raw',
+                'value' => function ($model) {
+                    return date('d/m/y H:i:s', strtotime($model->created_at));
+                },
             ],
             [
                 'format' => 'raw',

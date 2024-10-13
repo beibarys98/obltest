@@ -15,10 +15,10 @@ $this->title = Yii::t('app', 'Пәндер');
 ?>
 <div class="subject-index">
 
-    <h1><?= Html::encode($this->title) ?></h1>
+    <h1 class="text-center"><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a(Yii::t('app', 'Жаңа пән'), ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a(Yii::t('app', 'Жаңа пән'), ['create'], ['class' => 'btn btn-success w-100']) ?>
     </p>
 
     <?php Pjax::begin(); ?>
@@ -31,11 +31,14 @@ $this->title = Yii::t('app', 'Пәндер');
             'class' => LinkPager::class,
         ],
         'columns' => [
-
             'id',
             [
                 'attribute' => 'subject',
                 'label' => 'Пән'
+            ],
+            [
+                'attribute' => 'subject_ru',
+                'label' => 'Предмет'
             ],
             [
                 'class' => ActionColumn::className(),

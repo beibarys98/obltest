@@ -55,7 +55,7 @@ $this->registerJs("
             if (--timer < 0) {
                 timer = 0;
                 clearInterval(interval);
-                window.location = \"" . Url::to(['site/index']) . "\";
+                window.location = \"" . Url::to(['site/end', 'id' => $test->id]) . "\";
             }
         }, 1000);
     }
@@ -82,17 +82,17 @@ $this->registerJs("
                     <?= Html::img(Url::to('@web/' . $question->formula)) ?>
                 <?php else: ?>
                     <!-- Display the question text if no formula exists -->
-                    <?= Html::encode($question->question); ?>
+                    <?= $question->question; ?>
                 <?php endif; ?>
                 <br>
 
                 <?php
-                $answers = Answer::find()
-                    ->andWhere(['question_id' => $question->id])
-                    ->orderBy('RAND()')
-                    ->all();
-                $alphabet = range('A', 'Z');
-                $index = 0;
+                    $answers = Answer::find()
+                        ->andWhere(['question_id' => $question->id])
+                        ->orderBy('RAND()')
+                        ->all();
+                    $alphabet = range('A', 'Z');
+                    $index = 0;
                 ?>
 
                 <form id="answerForm" action="<?= Url::to(['site/submit']) ?>" method="get">
@@ -114,16 +114,16 @@ $this->registerJs("
                             <?= Html::img(Url::to('@web/' . $a->formula)) ?><br>
                         <?php else: ?>
                             <!-- Display the answer text if no formula exists -->
-                            <?= $alphabet[$index++] . '. ' . Html::encode($a->answer); ?><br>
+                            <?= $alphabet[$index++] . '. ' . $a->answer; ?><br>
                         <?php endif; ?>
                     <?php endforeach; ?>
 
                     <input type="hidden" name="question_id" value="<?= $question->id ?>">
 
-                    <!-- Submit button to trigger form submission via GET -->
-                    <button type="submit" class="btn btn-primary mt-5 w-100">
+                    <button type="submit" class="btn btn-primary mt-5 w-100" data-pjax="false">
                         <?= Yii::t('app', 'Сохранить') ?>
                     </button>
+
                 </form>
             </div>
         </div>
@@ -156,14 +156,17 @@ $this->registerJs("
                     <?php endforeach; ?>
                 </div>
                 <div class="jumbotron w-100" style="text-align: center;">
-                    <div id="clock" class="mt-5 mb-5" style="border: 1px solid black;
-                        border-radius: 10px; font-size: 24px;"></div>
 
-                    <a href="<?= Url::to(['site/end', 'id' => $test->id]) ?>" class="btn btn-danger w-100">
+                    <a href="<?= Url::to(['site/end', 'id' => $test->id]) ?>" class="btn btn-danger w-100 mt-5">
                         <?= Yii::t('app', 'Завершить') ?>
                     </a>
+
+                    <div id="clock" class="mt-5" style="border: 1px solid black;
+                        border-radius: 10px; font-size: 24px;">
+                    </div>
+
                 </div>
             </div>
-
         </div>
+    </div>
 </div>

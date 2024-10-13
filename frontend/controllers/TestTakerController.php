@@ -2,20 +2,18 @@
 
 namespace frontend\controllers;
 
+use common\models\Admin;
+use common\models\File;
+use common\models\Teacher;
 use common\models\TestTaker;
 use common\models\TestTakerSearch;
+use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
-/**
- * TestTakerController implements the CRUD actions for TestTaker model.
- */
 class TestTakerController extends Controller
 {
-    /**
-     * @inheritDoc
-     */
     public function behaviors()
     {
         return array_merge(
@@ -31,13 +29,12 @@ class TestTakerController extends Controller
         );
     }
 
-    /**
-     * Lists all TestTaker models.
-     *
-     * @return string
-     */
     public function actionIndex()
     {
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
         $searchModel = new TestTakerSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
@@ -47,26 +44,49 @@ class TestTakerController extends Controller
         ]);
     }
 
-    /**
-     * Displays a single TestTaker model.
-     * @param int $id ID
-     * @return string
-     * @throws NotFoundHttpException if the model cannot be found
-     */
+    public function actionDownload($id, $type)
+    {
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
+        $teacher = Teacher::findOne($id);
+
+        if ($type == 'pdf') {
+            $file = File::find()
+                ->andWhere(['teacher_id' => $teacher->id])
+                ->andWhere(['like', 'path', '%.pdf', false])
+                ->one();
+            $text = 'Қатемен жұмыс.pdf';
+        }
+        else {
+            $file = File::find()
+                ->andWhere(['teacher_id' => $teacher->id])
+                ->andWhere(['like', 'path', '%.jpeg', false])
+                ->one();
+            $text = 'Сертификат.jpeg';
+        }
+
+        return Yii::$app->response->sendFile($file->path, $text, ['inline' => true]);
+    }
+
     public function actionView($id)
     {
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
         return $this->render('view', [
             'model' => $this->findModel($id),
         ]);
     }
 
-    /**
-     * Creates a new TestTaker model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return string|\yii\web\Response
-     */
     public function actionCreate()
     {
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
         $model = new TestTaker();
 
         if ($this->request->isPost) {
@@ -82,15 +102,12 @@ class TestTakerController extends Controller
         ]);
     }
 
-    /**
-     * Updates an existing TestTaker model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id ID
-     * @return string|\yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     public function actionUpdate($id)
     {
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
         $model = $this->findModel($id);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
@@ -102,27 +119,17 @@ class TestTakerController extends Controller
         ]);
     }
 
-    /**
-     * Deletes an existing TestTaker model.
-     * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param int $id ID
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     public function actionDelete($id)
     {
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
         $this->findModel($id)->delete();
 
         return $this->redirect(['index']);
     }
 
-    /**
-     * Finds the TestTaker model based on its primary key value.
-     * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param int $id ID
-     * @return TestTaker the loaded model
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     protected function findModel($id)
     {
         if (($model = TestTaker::findOne(['id' => $id])) !== null) {

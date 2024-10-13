@@ -3,11 +3,11 @@
 namespace common\models\query;
 
 /**
- * This is the ActiveQuery class for [[\common\models\School]].
+ * This is the ActiveQuery class for [[\common\models\Certificate]].
  *
- * @see \common\models\School
+ * @see \common\models\Certificate
  */
-class SchoolQuery extends \yii\db\ActiveQuery
+class CertificateQuery extends \yii\db\ActiveQuery
 {
     /*public function active()
     {
@@ -16,7 +16,7 @@ class SchoolQuery extends \yii\db\ActiveQuery
 
     /**
      * {@inheritdoc}
-     * @return \common\models\School[]|array
+     * @return \common\models\Certificate[]|array
      */
     public function all($db = null)
     {
@@ -25,7 +25,7 @@ class SchoolQuery extends \yii\db\ActiveQuery
 
     /**
      * {@inheritdoc}
-     * @return \common\models\School|array|null
+     * @return \common\models\Certificate|array|null
      */
     public function one($db = null)
     {

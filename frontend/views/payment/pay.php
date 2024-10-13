@@ -49,7 +49,7 @@ use yii\helpers\Html;
                         <?= Yii::t('app', 'Инструкция') ?>
                     </button>
                 </h2>
-                <div class="accordion-collapse collapse" id="collapseOne">
+                <div class="accordion-collapse collapse show" id="collapseOne">
                     <div class="accordion-body" style="font-size: 16px;">
                         1) <?= Yii::t('app', 'Отправьте квитанцию себе на WhatsApp') ?>. <br>
                         2) <?= Yii::t('app', 'Нажмите на эту ссылку') ?> <a href="https://web.whatsapp.com" target="_blank">web.whatsapp.com</a>. <br>

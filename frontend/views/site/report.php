@@ -1,6 +1,7 @@
 <?php
 
 use common\models\Answer;
+use yii\grid\GridView;
 use yii\helpers\Html;
 use yii\helpers\Url;
 
@@ -8,23 +9,57 @@ use yii\helpers\Url;
 /** @var common\models\Test $test */
 /** @var $questions*/
 /** @var $answers*/
+/** @var $testDP */
+/** @var $resultDP */
 
 $this->title = $test->title;
 \yii\web\YiiAsset::register($this);
 ?>
 <div class="test-view">
 
-    <h1><?= Html::encode($this->title) ?></h1>
-
-    <?php
-    $score = 0;
-    $totalQuestions = count($questions);
-    ?>
+    <div class="row">
+        <div class="col-9">
+            <?= GridView::widget([
+                'dataProvider' => $testDP,
+                'layout' => "{items}",
+                'columns' => [
+                    [
+                        'attribute' => 'title',
+                        'label' => 'Атауы'
+                    ],
+                    [
+                        'attribute' => 'language',
+                        'label' => 'Тіл'
+                    ],
+                    [
+                        'attribute' => 'version',
+                        'label' => 'Нұсқа'
+                    ],
+                ],
+            ]); ?>
+        </div>
+        <div class="col-3">
+            <?= GridView::widget([
+                'dataProvider' => $resultDP,
+                'layout' => "{items}",
+                'columns' => [
+                    [
+                        'attribute' => 'teacher.name',
+                        'label' => 'Есімі'
+                    ],
+                    [
+                        'attribute' => 'result',
+                        'label' => 'Нәтиже'
+                    ],
+                ],
+            ]); ?>
+        </div>
+    </div>
 
     <div style="font-size: 24px;">
         <?php $number = 1; ?>
         <?php foreach ($questions as $q): ?>
-            <?= $number++ . '. ' . htmlspecialchars($q->question) ?>
+            <?= $number++ . '. ' . $q->question ?>
             <br>
             <?php
             $answersModel = Answer::find()
@@ -35,38 +70,28 @@ $this->title = $test->title;
             ?>
             <?php foreach ($answersModel as $a): ?>
                 <?php
-                $isCorrect = $a->answer == Answer::findOne($q->correct_answer)->answer;
-                $isUserAnswer = isset($answers[$q->id]) && $answers[$q->id] == $a->answer;
+                $isCorrect = $a->id == $q->correct_answer;
+                $isUserAnswer = isset($answers[$q->id])
+                    && $answers[$q->id]->answer_id == $a->id;
                 $color = '';
 
                 if ($isCorrect) {
                     $color = 'color: green;';
-                    // Increment score if the user's answer is correct
-                    if ($isUserAnswer) {
-                        $score++;
-                    }
                 } elseif ($isUserAnswer) {
                     $color = 'color: red;';
                 }
                 ?>
                 <span style="<?= $color ?>">
                     <?php if ($a->formula): ?>
-                        <!-- Display the formula image if it exists for the answer -->
                         <?= $alphabet[$index++] . '. ' ?>
-                        <?= Html::img(Url::to('@web/' . $a->formula)) ?>
+                        <?= Html::img($a->formula) ?>
                     <?php else: ?>
-                        <!-- Display the answer text if no formula exists -->
-                        <?= $alphabet[$index++] . '. ' . Html::encode($a->answer); ?>
+                        <?= $alphabet[$index++] . '. ' . $a->answer; ?>
                     <?php endif; ?>
                 </span>
                 <br>
             <?php endforeach; ?>
             <br>
         <?php endforeach; ?>
-    </div>
-
-    <!-- print score -->
-    <div style="font-weight: bold;">
-        <h3>Нәтиже: <?= $score ?> / <?= $totalQuestions ?></h3>
     </div>
 </div>

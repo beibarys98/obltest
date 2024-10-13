@@ -14,10 +14,10 @@ $this->title = Yii::t('app', 'Мұғалімдер');
 ?>
 <div class="teacher-index">
 
-    <h1><?= Html::encode($this->title) ?></h1>
+    <h1 class="text-center"><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a(Yii::t('app', 'Жаңа мұғалім'), ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a(Yii::t('app', 'Жаңа мұғалім'), ['create'], ['class' => 'btn btn-success w-100']) ?>
     </p>
 
     <?php Pjax::begin(); ?>
@@ -27,33 +27,35 @@ $this->title = Yii::t('app', 'Мұғалімдер');
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'columns' => [
-
             'id',
             [
+                'attribute' => 'username',
+                'label' => 'Логин',
+                'value' => 'user.username',
+            ],
+            [
                 'attribute' => 'name',
-                'label' => 'Есімі'
+                'label' => 'Т.А.Ә.'
             ],
             [
-                'attribute' => 'school_id',
-                'label' => 'Мектеп',
-                'value' => 'school.name'
+                'attribute' => 'school',
+                'label' => 'Мекеме атауы'
             ],
             [
-                'attribute' => 'subject_id',
+                'attribute' => 'subject',
                 'label' => 'Пән',
-                'value' => 'subject.subject'
+                'value' => 'subject.subject',
             ],
             [
                 'attribute' => 'language',
-                'label' => 'Тіл тобы',
-                'value' => 'language'
+                'label' => 'Тест тапсыру тілі'
             ],
             [
                 'class' => ActionColumn::className(),
                 'template' => '{update} {delete}',
                 'urlCreator' => function ($action, Teacher $model, $key, $index, $column) {
                     return Url::toRoute([$action, 'id' => $model->id]);
-                 }
+                }
             ],
         ],
     ]); ?>

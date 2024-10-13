@@ -4,10 +4,12 @@ namespace frontend\controllers;
 
 use common\models\Admin;
 use common\models\Answer;
+use common\models\Certificate;
 use common\models\File;
 use common\models\Formula;
 use common\models\Payment;
 use common\models\Percentage;
+use common\models\Purpose;
 use common\models\Question;
 use common\models\Result;
 use common\models\ResultPdf;
@@ -15,7 +17,6 @@ use common\models\Teacher;
 use common\models\TeacherAnswer;
 use common\models\Test;
 use common\models\TestTaker;
-use DateTime;
 use DOMDocument;
 use DOMXPath;
 use kartik\mpdf\Pdf;
@@ -24,13 +25,11 @@ use PhpOffice\PhpWord\Shared\ZipArchive;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\web\Controller;
+use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\web\UploadedFile;
 
-/**
- * TestController implements the CRUD actions for Test model.
- */
 class TestController extends Controller
 {
     public function behaviors()
@@ -50,6 +49,10 @@ class TestController extends Controller
 
     public function actionIndex()
     {
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
         if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
             return $this->redirect(['/site/login']);
         }
@@ -74,33 +77,50 @@ class TestController extends Controller
             'query' => Test::find()->andWhere(['status' => 'certificated'])
         ]);
 
-        $percentage = Percentage::find()->one();
-
-        if ($percentage->load(Yii::$app->request->post()) && $percentage->save()) {
-            return $this->redirect(['index']);
-        }
-
         return $this->render('index', [
             'dataProvider' => $dataProvider,
             'dataProvider2' => $dataProvider2,
             'dataProvider3' => $dataProvider3,
             'dataProvider4' => $dataProvider4,
             'dataProvider5' => $dataProvider5,
-            'percentage' => $percentage,
         ]);
+    }
+
+    public function certificate($teacher, $test, $place)
+    {
+        $cert = Certificate::findOne(['subject_id' => $test->subject_id])->certificate;
+        $imgPath = Yii::getAlias("@webroot/certificates/{$place}/{$cert}");
+        $image = imagecreatefromjpeg($imgPath);
+        $textColor = imagecolorallocate($image, 227, 41, 29);
+        $fontPath = '/app/frontend/fonts/times.ttf';
+
+        $averageCharWidth = 9.5;
+        $numChars = strlen($teacher->name);
+        $textWidth = $numChars * $averageCharWidth;
+        $cx = 950;
+        $x = (int)($cx - ($textWidth / 2));
+        imagettftext($image, 28, 0, $x, 760, $textColor, $fontPath, $teacher->name);
+
+        $newPath = Yii::getAlias('@webroot/certificates/')
+            . Yii::$app->security->generateRandomString(8)
+            . '.jpeg';
+        imagejpeg($image, $newPath);
+        imagedestroy($image);
+
+        $certificate = new File();
+        $certificate->teacher_id = $teacher->id;
+        $certificate->test_id = $test->id;
+        $certificate->path = $newPath;
+        $certificate->save(false);
     }
 
     public function actionView($id)
     {
-        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
             return $this->redirect(['/site/login']);
         }
 
         $test = Test::findOne($id);
-        if (new DateTime() >= new DateTime($test->end_time)) {
-            $test->status = 'finished';
-            $test->save(false);
-        }
         $questions = Question::find()
             ->andWhere(['test_id' => $id])
             ->all();
@@ -113,7 +133,7 @@ class TestController extends Controller
 
     public function actionCreate()
     {
-        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
             return $this->redirect(['/site/login']);
         }
 
@@ -225,53 +245,23 @@ class TestController extends Controller
             foreach ($section->getElements() as $element) {
                 if ($element instanceof \PhpOffice\PhpWord\Element\TextRun) {
                     $textLine = '';
-                    $isBold = false;
 
                     // Process each element within the TextRun
                     foreach ($element->getElements() as $textElement) {
                         if ($textElement instanceof \PhpOffice\PhpWord\Element\Text) {
-                            // Check if the text is bold by accessing the font style
-                            $fontStyle = $textElement->getFontStyle();
-                            if ($fontStyle && $fontStyle->isBold()) {
-                                $isBold = true;
-                            }
-
                             // Concatenate the text to form the full line
                             $textLine .= $textElement->getText();
-                        } elseif ($textElement instanceof \PhpOffice\PhpWord\Element\TextRun) {
-                            // Process nested TextRun elements
-                            foreach ($textElement->getElements() as $nestedTextElement) {
-                                if ($nestedTextElement instanceof \PhpOffice\PhpWord\Element\Text) {
-                                    // Check if the text is bold by accessing the font style
-                                    $fontStyle = $nestedTextElement->getFontStyle();
-                                    if ($fontStyle && $fontStyle->isBold()) {
-                                        $isBold = true;
-                                    }
-
-                                    // Concatenate the text to form the full line
-                                    $textLine .= $nestedTextElement->getText();
-                                }
-                            }
                         }
                     }
 
-                    // Add the text line with bold information to the array
+                    // Add the text line with correct information to the array
                     $lines[] = [
                         'text' => $textLine,
-                        'isBold' => $isBold
-                    ];
-                } elseif ($element instanceof \PhpOffice\PhpWord\Element\Text) {
-                    // Handle cases where the element is a single text element
-                    $fontStyle = $element->getFontStyle();
-                    $isBold = $fontStyle && $fontStyle->isBold();
-
-                    $lines[] = [
-                        'text' => $element->getText(),
-                        'isBold' => $isBold
                     ];
                 }
             }
         }
+
 
         return $lines;
     }
@@ -279,13 +269,12 @@ class TestController extends Controller
     public function processAndStoreQuestions($linesArray, $test_id)
     {
         $currentQuestion = null;
+        $firstAnswerProcessed = false;
+
         foreach ($linesArray as $lineData) {
             $lineText = $lineData['text'];
-            $isBold = $lineData['isBold'];
 
-            // Check if the line is a question (e.g., starts with a number and a dot)
             if (preg_match('/^\s*\d+\s*\.?\s*(.+)$/u', $lineText, $matches)) {
-
                 // Create a new question
                 $currentQuestion = new Question();
                 $currentQuestion->test_id = $test_id;
@@ -293,19 +282,20 @@ class TestController extends Controller
                 $currentQuestion->correct_answer = ''; // Set this later if needed
 
                 $currentQuestion->save();
+                $firstAnswerProcessed = false;
 
             } elseif (preg_match('/^\s*[a-zA-Zа-яА-ЯёЁ]\s*[\.\)]?\s*(.+)$/u', $lineText, $matches)) {
                 // This is an answer
                 if ($currentQuestion !== null) {
                     $answerText = $matches[1];
                     $answer = new Answer();
-                    $answer->question_id = $currentQuestion->id; // Must save the question first
+                    $answer->question_id = $currentQuestion->id;
                     $answer->answer = $answerText;
                     $answer->save();
 
-                    // Check if the first symbol of the answer is bold
-                    if ($isBold) {
+                    if (!$firstAnswerProcessed) {
                         $currentQuestion->correct_answer = $answer->id;
+                        $firstAnswerProcessed = true;
                         $currentQuestion->save(false);
                     }
                 }
@@ -313,9 +303,10 @@ class TestController extends Controller
         }
     }
 
+
     public function actionReady($id): \yii\web\Response
     {
-        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
             return $this->redirect(['/site/login']);
         }
 
@@ -328,7 +319,7 @@ class TestController extends Controller
 
     public function actionPublish($id)
     {
-        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
             return $this->redirect(['/site/login']);
         }
 
@@ -341,7 +332,7 @@ class TestController extends Controller
 
     public function actionEnd($id)
     {
-        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
             return $this->redirect(['/site/login']);
         }
 
@@ -354,7 +345,7 @@ class TestController extends Controller
 
     public function actionPresent($id)
     {
-        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
             return $this->redirect(['/site/login']);
         }
 
@@ -367,12 +358,15 @@ class TestController extends Controller
                 ->andWhere(['test_id' => $id])
                 ->orderBy(['result' => SORT_DESC]),
         ]);
+        $testDP = new ActiveDataProvider([
+            'query' => Test::find()->andWhere(['id' => $id]),
+        ]);
 
         //save results in pdf
         $content = $this->renderPartial('result', [
-            'results' => $results
+            'results' => $results,
+            'testDP' => $testDP,
         ]);
-
         $pdf = new Pdf([
             'mode' => Pdf::MODE_UTF8,
             'content' => $content,
@@ -380,14 +374,11 @@ class TestController extends Controller
             'cssInline' => '.kv-heading-1{font-size:18px}',
             'filename' => 'Нәтиже.pdf',
         ]);
-
-        //save results pdf in db
         $pdfOutput = $pdf->render();
         $pdfFilePath = Yii::getAlias('@webroot/results/')
             . Yii::$app->security->generateRandomString(8)
             . '.pdf';
         file_put_contents($pdfFilePath, $pdfOutput);
-
         $result_pdf = new ResultPdf();
         $result_pdf->test_id = $id;
         $result_pdf->path = $pdfFilePath;
@@ -398,15 +389,12 @@ class TestController extends Controller
             ->andWhere(['test_id' => $id])
             ->orderBy(['result' => SORT_DESC])
             ->all();
-
         $firstPlace = [];
         $secondPlace = [];
         $thirdPlace = [];
         $goodResults = [];
         $certificateResults = [];
-
         $percentage = Percentage::find()->one();
-
         foreach ($topResults as $result) {
             if ($result->result >= $percentage->first) {
                 $firstPlace[] = $result;
@@ -424,7 +412,6 @@ class TestController extends Controller
                 $certificateResults[] = $result;
             }
         }
-
         foreach ($firstPlace as $result) {
             $this->certificate(Teacher::findOne($result->teacher_id), Test::findOne($id), 1);
         }
@@ -444,9 +431,51 @@ class TestController extends Controller
         return $this->redirect(['view', 'id' => $id]);
     }
 
+    public function actionDownloadZip($type){
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
+        if($type == 'receipts'){
+            $filePaths = Payment::find()->select('payment')->all();
+            $zipFileName = 'Квитанциялар.zip';
+        }elseif($type == 'certificates'){
+            $filePaths = File::find()->select('path')->andWhere(['like', 'path', '%.jpeg', false])->all();
+            $zipFileName = 'Сертификаттар.zip';
+        }elseif ($type == 'reports') {
+            $filePaths = File::find()->select('path')->andWhere(['like', 'path', '%.pdf', false])->all();
+            $zipFileName = 'Қатемен Жұмыстар.zip';
+        }else{
+            $filePaths = ResultPdf::find()->select('path')->andWhere(['like', 'path', '%.pdf', false])->all();
+            $zipFileName = 'Нәтижелер.zip';
+        }
+        $zip = new \ZipArchive();
+        $zipFilePath = Yii::getAlias('@webroot/uploads/' . $zipFileName);
+        if ($zip->open($zipFilePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== TRUE) {
+            throw new HttpException(500, 'Could not create ZIP file.');
+        }
+        foreach ($filePaths as $filePath) {
+            if($type == 'receipts'){
+                $realPath = Yii::getAlias($filePath->payment);
+            }else{
+                $realPath = $filePath->path;
+            }
+            if (file_exists($realPath)) {
+                $zip->addFile($realPath, basename($realPath));
+            } else {
+                // Handle the error if the file does not exist
+                Yii::error("File not found: $realPath");
+            }
+        }
+        $zip->close();
+        return Yii::$app->response->sendFile($zipFilePath)->on(\yii\web\Response::EVENT_AFTER_SEND, function () use ($zipFilePath) {
+            @unlink($zipFilePath); // Delete the ZIP file after sending it
+        });
+    }
+
     public function actionResult($id)
     {
-        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
             return $this->redirect(['/site/login']);
         }
 
@@ -454,34 +483,12 @@ class TestController extends Controller
             ->andWhere(['test_id' => $id])
             ->andWhere(['like', 'path', '%.pdf', false])
             ->one();
-        return Yii::$app->response->sendFile($file->path, 'Нәтиже.pdf');
-    }
-
-    public function certificate($teacher, $test, $place)
-    {
-        $imgPath = Yii::getAlias("@webroot/certificates/template/certificate{$place}.jpeg");
-        $image = imagecreatefromjpeg($imgPath);
-        $textColor = imagecolorallocate($image, 0, 0, 0);
-        $textColor2 = imagecolorallocate($image, 43, 56, 98);
-        $fontPath = '/app/frontend/fonts/times.ttf';
-        imagettftext($image, 32, 0, 900, 775, $textColor2, $fontPath, $teacher->subject->subject);
-        imagettftext($image, 32, 0, 875, 975, $textColor, $fontPath, $teacher->name);
-        $newPath = Yii::getAlias('@webroot/certificates/')
-            . Yii::$app->security->generateRandomString(8)
-            . '.jpeg';
-        imagejpeg($image, $newPath);
-        imagedestroy($image);
-
-        $certificate = new File();
-        $certificate->teacher_id = $teacher->id;
-        $certificate->test_id = $test->id;
-        $certificate->path = $newPath;
-        $certificate->save(false);
+        return Yii::$app->response->sendFile($file->path, 'Нәтиже.pdf', ['inline' => true,]);
     }
 
     public function actionAddFormula($id, $type)
     {
-        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
             return $this->redirect(['/site/login']);
         }
 
@@ -521,16 +528,40 @@ class TestController extends Controller
 
     public function actionDeleteFormula($id, $test_id)
     {
-        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
             return $this->redirect(['/site/login']);
         }
 
         return $this->redirect(['formula', 'id' => $test_id]);
     }
 
+    public function actionSettings()
+    {
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
+        $percentage = Percentage::find()->one();
+
+        if ($percentage->load(Yii::$app->request->post()) && $percentage->save()) {
+            return $this->redirect(['index']);
+        }
+
+        $purpose = Purpose::find()->one() ?: new Purpose();
+
+        if ($purpose->load(Yii::$app->request->post()) && $purpose->save()) {
+            return $this->redirect(['index']);
+        }
+
+        return $this->render('settings', [
+            'percentage' => $percentage,
+            'purpose' => $purpose,
+        ]);
+    }
+
     public function actionDelete($id)
     {
-        if(!Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
             return $this->redirect(['/site/login']);
         }
 
@@ -543,16 +574,14 @@ class TestController extends Controller
         $testTakers = TestTaker::find()->andWhere(['test_id' => $id])->all();
 
         foreach ($files as $file) {
-            if(unlink($file->path)){
-                $file->delete();
-            }
+            unlink($file->path);
+            $file->delete();
         }
 
         foreach ($payments as $payment) {
             if (file_exists($payment->payment)) {
-                if (unlink($payment->payment)) {
-                    $payment->delete();
-                }
+                unlink($payment->payment);
+                $payment->delete();
             }
         }
 
@@ -579,9 +608,8 @@ class TestController extends Controller
         }
 
         foreach ($resultPdfs as $rP) {
-            if(unlink($rP->path)){
-                $rP->delete();
-            }
+            unlink($rP->path);
+            $rP->delete();
         }
 
         foreach ($testTakers as $tT) {

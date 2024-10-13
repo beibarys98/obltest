@@ -29,7 +29,7 @@ $this->title = Yii::t('app', 'Жаңа тест');
         <div class="col-lg-4">
             <?= $form->field($model, 'subject_id')->dropDownList(
                 $subjects,
-                ['prompt' => 'Пән таңдаңыз'])->label('Пән') ?>
+                ['prompt' => ''])->label('Пән') ?>
 
         </div>
         <div class="col-lg-4">
@@ -42,8 +42,8 @@ $this->title = Yii::t('app', 'Жаңа тест');
 
             <?= $form->field($model, 'language')->dropDownList(
                 $languages,
-                ['prompt' => 'Тілдік топты таңдаңыз'])
-                ->label('Тілдік топ')?>
+                ['prompt' => ''])
+                ->label('Тест тапсыру тілі')?>
         </div>
         <div class="col-lg-4">
             <?= $form->field($model, 'version')->textInput()->label('Нұсқа') ?>
@@ -61,7 +61,7 @@ $this->title = Yii::t('app', 'Жаңа тест');
 
         <div class="col-lg-4">
             <?= $form->field($model, 'date')->widget(DateTimePicker::classname(), [
-                'options' => ['placeholder' => 'Күнін таңдаңыз'],
+                'options' => ['placeholder' => ''],
                 'pluginOptions' => [
                     'autoclose' => true,
                     'format' => 'yyyy-mm-dd',
@@ -69,9 +69,11 @@ $this->title = Yii::t('app', 'Жаңа тест');
                     'minView' => 2,
                     'startView' => 2,
                     'showMeridian' => false,
+                    'weekStart' => 1
                 ]
-            ])->label('Өтілім күні');?>
+            ])->label('Өтілім күні'); ?>
         </div>
+
 
         <div class="col-lg-4">
             <div style="width: 100%;">

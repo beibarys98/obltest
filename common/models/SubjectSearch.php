@@ -18,7 +18,7 @@ class SubjectSearch extends Subject
     {
         return [
             [['id'], 'integer'],
-            [['subject'], 'safe'],
+            [['subject', 'subject_ru'], 'safe'],
         ];
     }
 
@@ -62,6 +62,7 @@ class SubjectSearch extends Subject
         ]);
 
         $query->andFilterWhere(['like', 'subject', $this->subject]);
+        $query->andFilterWhere(['like', 'subject_ru', $this->subject_ru]);
 
         return $dataProvider;
     }

@@ -79,13 +79,6 @@ class Payment extends \yii\db\ActiveRecord
         return $this->hasOne(Test::class, ['id' => 'test_id']);
     }
 
-    public function getSubject()
-    {
-        return $this->hasOne(Subject::class, ['id' => 'subject_id'])
-            ->via('test'); // Using the 'test' relation
-    }
-
-
     /**
      * {@inheritdoc}
      * @return \common\models\query\PaymentQuery the active query used by this AR class.

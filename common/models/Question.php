@@ -85,4 +85,10 @@ class Question extends \yii\db\ActiveRecord
     {
         return new \common\models\query\QuestionQuery(get_called_class());
     }
+
+    public function getTeacherAnswers(): \yii\db\ActiveQuery
+    {
+        return $this->hasMany(TeacherAnswer::class, ['question_id' => 'id']);
+    }
+
 }

@@ -23,8 +23,10 @@ class SignupForm extends Model
         return [
             ['username', 'trim'],
             ['username', 'required'],
-            ['username', 'unique', 'targetClass' => '\common\models\User', 'message' => 'This username has already been taken.'],
+            ['username', 'unique', 'targetClass' => '\common\models\User', 'message' => Yii::t('app','Этот логин уже занят!')],
             ['username', 'string', 'min' => 2, 'max' => 255],
+            ['username', 'match', 'pattern' => '/^\S+$/', 'message' => Yii::t('app', 'Логин не может содержать пробелы!')],
+
 
             ['password', 'required'],
             ['password', 'string', 'min' => Yii::$app->params['user.passwordMinLength']],

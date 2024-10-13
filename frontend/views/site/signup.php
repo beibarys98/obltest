@@ -31,17 +31,7 @@ $this->title = Yii::t('app', 'Регистрация');
 
             <?= $form->field($model, 'username')->textInput()->label('Логин') ?>
 
-            <?php
-            $schools = ArrayHelper::map(School::find()->all(), 'id', 'name');
-            ?>
-
-            <?= $form->field($model2, 'school_id')->widget(Select2::classname(), [
-                'data' => $schools,
-                'options' => ['placeholder' => Yii::t('app', 'Выберите школу')],
-                'pluginOptions' => [
-                    'allowClear' => true
-                ],
-            ])->label(Yii::t('app', 'Школа'));?>
+            <?= $form->field($model2, 'school')->textInput()->label(Yii::t('app', 'Наименование организаций'));?>
 
             <?php
             // Determine which field to use based on the current language
@@ -51,22 +41,33 @@ $this->title = Yii::t('app', 'Регистрация');
             $subjects = ArrayHelper::map(Subject::find()->all(), 'id', $subjectField);
             ?>
 
-            <?= $form->field($model2, 'subject_id')->dropDownList(
-                $subjects,
-                ['prompt' => Yii::t('app', 'Выберите предмет')])
-                ->label(Yii::t('app', 'Предмет')) ?>
+        <?= $form->field($model2, 'subject_id', ['labelOptions' => ['label' => Yii::t('app', 'Предмет')]])
+            ->widget(Select2::classname(),
+        [
+            'data' => $subjects,
+            'options' => [
+                'placeholder' => '',
+                'style' => ['width' => '100%'], // Ensure full width of the select box
+            ],
+            'pluginOptions' => [
+                'allowClear' => true, // Allow clearing the selection
+                'dropdownAutoWidth' => true, // Adjust dropdown width automatically
+                'maximumInputLength' => 20, // Optionally limit search length
+            ],
+        ]); ?>
 
-            <?php
+
+        <?php
             $languages = [
-                'kz' => Yii::t('app', 'казахская группа'),
-                'ru' => Yii::t('app', 'русская группа'),
+                'kz' => Yii::t('app', 'казахский'),
+                'ru' => Yii::t('app', 'русский'),
             ];
             ?>
 
             <?= $form->field($model2, 'language')->dropDownList(
                 $languages,
-                ['prompt' => Yii::t('app', 'Выберите языковую группу')])
-                ->label(Yii::t('app', 'Языковая группа'))?>
+                ['prompt' => ''])
+                ->label(Yii::t('app', 'Язык сдачи теста'))?>
 
             <?= $form->field($model, 'password')->passwordInput()->label(Yii::t('app', 'Пароль')) ?>
 
@@ -85,10 +86,18 @@ $this->title = Yii::t('app', 'Регистрация');
                         <?= Yii::t('app', 'Инструкция') ?>
                     </button>
                 </h2>
-                <div class="accordion-collapse collapse" id="collapseOne">
+                <div class="accordion-collapse collapse show" id="collapseOne">
                     <div class="accordion-body" style="font-size: 16px;">
+                        <!-- YouTube video embed -->
+                        <iframe width="100%" height="270px" src="<?= Yii::t('app', 'https://www.youtube.com/embed/ZYeX8mDePPI') ?>"
+                                title="YouTube video player" frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                        </iframe>
+                        <br>
+                        <br>
                         1.	<?= Yii::t('app', 'Вопросы олимпиады: По предмету – 50 вопросов;') ?> <br>
-                        2.	<?= Yii::t('app', 'Время тестирования – 120 минут (по истечении времени тестирование автоматически закрывается);') ?> <br>
+                        2.	<?= Yii::t('app', 'Время тестирования – 60 минут. По предметам математика, физика, химия – 120 минут. (по истечении времени тестирование автоматически закрывается);') ?> <br>
                         3.	<?= Yii::t('app', 'Из предложенных 4 ответов нужно выбрать 1 правильный ответ;') ?> <br>
                         4.	<?= Yii::t('app', '1 правильный ответ – 1 балл;') ?> <br>
                         5.	<?= Yii::t('app', 'Участник должен указать полные сведения о себе (Ф.И.О. по удостоверению личности, указать название города, района, наименование школы);') ?>

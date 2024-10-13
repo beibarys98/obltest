@@ -10,8 +10,9 @@ use yii\data\ActiveDataProvider;
  */
 class PaymentSearch extends Payment
 {
-    public $teacher_name; // Add this line
-    public $test_subject; // Add this line
+    public $username;
+    public $name;
+    public $subject;
 
     /**
      * {@inheritdoc}
@@ -20,7 +21,7 @@ class PaymentSearch extends Payment
     {
         return [
             [['id', 'teacher_id', 'test_id'], 'integer'],
-            [['payment', 'created_at', 'teacher_name', 'test_subject'], 'safe'],
+            [['payment', 'created_at', 'name', 'subject', 'username'], 'safe'],
         ];
     }
 
@@ -46,8 +47,20 @@ class PaymentSearch extends Payment
 
         // add conditions that should always apply here
 
+        $query->joinWith(['teacher']);
+        $query->joinWith(['test.subject']);
+        $query->joinWith(['teacher.user']);
+
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'sort' => [
+                'attributes' => [
+                    'username',
+                    'name',
+                    'subject',
+                    'created_at'
+                ]
+            ]
         ]);
 
         $this->load($params);
@@ -58,9 +71,6 @@ class PaymentSearch extends Payment
             return $dataProvider;
         }
 
-        $query->joinWith(['teacher']);
-        $query->joinWith(['subject']);
-
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
@@ -68,8 +78,9 @@ class PaymentSearch extends Payment
         ]);
 
         $query->andFilterWhere(['like', 'payment', $this->payment]);
-        $query->andFilterWhere(['like', 'teacher.name', $this->teacher_name]);
-        $query->andFilterWhere(['like', 'subject.subject', $this->test_subject]);
+        $query->andFilterWhere(['like', 'teacher.name', $this->name]);
+        $query->andFilterWhere(['like', 'subject.subject', $this->subject]);
+        $query->andFilterWhere(['like', 'user.username', $this->username]);
 
         return $dataProvider;
     }

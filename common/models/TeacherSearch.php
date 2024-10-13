@@ -11,14 +11,17 @@ use common\models\Teacher;
  */
 class TeacherSearch extends Teacher
 {
+    public $username;
+    public $subject;
+
     /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
-            [['id', 'user_id', 'school_id', 'subject_id'], 'integer'],
-            [['name'], 'safe'],
+            [['id', 'user_id', 'subject_id'], 'integer'],
+            [['name', 'school', 'language', 'username', 'subject'], 'safe'],
         ];
     }
 
@@ -44,8 +47,20 @@ class TeacherSearch extends Teacher
 
         // add conditions that should always apply here
 
+        $query->joinWith(['user', 'subject']);
+
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'sort' => [
+                'attributes' => [
+                    'id',
+                    'username',
+                    'name',
+                    'school',
+                    'subject',
+                    'language',
+                ]
+            ]
         ]);
 
         $this->load($params);
@@ -59,12 +74,13 @@ class TeacherSearch extends Teacher
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
-            'user_id' => $this->user_id,
-            'school_id' => $this->school_id,
-            'subject_id' => $this->subject_id,
         ]);
 
-        $query->andFilterWhere(['like', 'name', $this->name]);
+        $query->andFilterWhere(['like', 'name', $this->name])
+            ->andFilterWhere(['like', 'school', $this->school])
+            ->andFilterWhere(['like', 'language', $this->language])
+            ->andFilterWhere(['like', 'user.username', $this->username])
+            ->andFilterWhere(['like', 'subject.subject', $this->subject]);
 
         return $dataProvider;
     }
