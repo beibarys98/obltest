@@ -77,6 +77,11 @@ $this->title = $test->title;
                                 'confirm' => Yii::t('app', 'Сенімдісіз бе?'),
                             ]
                         ]);
+
+                    echo Html::a(Yii::t('app', 'Қатысушылар') ,
+                        ['/test-taker/index', 'id' => $test->id],
+                        ['class' => 'btn btn-primary ms-1']);
+
                 }else if($test->status == 'finished'){
                     echo Html::a(Yii::t('app', 'Марапаттау') ,
                         ['present', 'id' => $test->id],
@@ -86,10 +91,27 @@ $this->title = $test->title;
                                 'confirm' => Yii::t('app', 'Сенімдісіз бе?'),
                             ]
                         ]);
+                    echo Html::a(Yii::t('app', 'Қайта жариялау') ,
+                        ['publish', 'id' => $test->id],
+                        [
+                            'class' => 'btn btn-success',
+                            'data' => [
+                                'confirm' => Yii::t('app', 'Сенімдісіз бе?'),
+                            ]
+                        ]);
+
+                    echo Html::a(Yii::t('app', 'Қатысушылар') ,
+                        ['/test-taker/index', 'id' => $test->id],
+                        ['class' => 'btn btn-primary ms-1']);
+
                 }else if($test->status == 'certificated'){
                     echo Html::a(Yii::t('app', 'Нәтиже') ,
                         ['/test/result', 'id' => $test->id],
                         ['class' => 'btn btn-success', 'target' => '_blank']);
+
+                    echo Html::a(Yii::t('app', 'Қатысушылар') ,
+                        ['/test-taker/index', 'id' => $test->id],
+                        ['class' => 'btn btn-primary ms-1']);
                 }
                 ?>
 

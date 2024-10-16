@@ -2,7 +2,7 @@
 
 use yii\helpers\Html;
 use yii\grid\GridView;
-use yii\bootstrap5\ActiveForm;
+use yii\helpers\Url;
 use yii\widgets\Pjax;
 
 /** @var yii\web\View $this */
@@ -186,6 +186,7 @@ $this->title = Yii::t('app', Yii::$app->name)
                     ],
                 ],
             ]); ?>
+
         </div>
 
         <div class="col-6">
@@ -219,20 +220,13 @@ $this->title = Yii::t('app', Yii::$app->name)
                     [
                         'format' => 'raw',
                         'value' => function ($model) {
-                            return Html::a('Нәтиже', ['/test/result', 'id' => $model->id],
-                                [
-                                    'target' => '_blank',
-                                    'data-pjax' => 0,
-                                ]);
-                        }
+                            return date('d/m/y', strtotime($model->start_time)) . "<br>" .
+                                date('H:i:s', strtotime($model->duration));
+                        },
                     ],
-
                 ],
             ]); ?>
         </div>
-
-
-
 
     <?php Pjax::end(); ?>
 

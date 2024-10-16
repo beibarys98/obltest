@@ -12,7 +12,6 @@
  * @var $subjects
  */
 
-use common\models\School;
 use common\models\Subject;
 use frontend\models\SignupForm;
 use yii\bootstrap5\Html;

@@ -23,7 +23,7 @@ use Yii;
  * @property Question[] $questions
  * @property ResultPdf[] $resultPdfs
  * @property Result[] $results
- * @property StartTime[] $startTimes
+ * @property TestTaker[] $testTakers
  * @property Subject $subject
  */
 class Test extends \yii\db\ActiveRecord
@@ -133,11 +133,11 @@ class Test extends \yii\db\ActiveRecord
     /**
      * Gets query for [[StartTimes]].
      *
-     * @return \yii\db\ActiveQuery|\common\models\query\StartTimeQuery
+     * @return \yii\db\ActiveQuery|\common\models\query\TestTakerQuery
      */
-    public function getStartTimes()
+    public function getTestTakers()
     {
-        return $this->hasMany(StartTime::class, ['test_id' => 'id']);
+        return $this->hasMany(TestTaker::class, ['test_id' => 'id']);
     }
 
     /**

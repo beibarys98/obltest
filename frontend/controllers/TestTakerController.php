@@ -5,9 +5,10 @@ namespace frontend\controllers;
 use common\models\Admin;
 use common\models\File;
 use common\models\Teacher;
+use common\models\Test;
 use common\models\TestTaker;
-use common\models\TestTakerSearch;
 use Yii;
+use yii\data\ActiveDataProvider;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -29,18 +30,20 @@ class TestTakerController extends Controller
         );
     }
 
-    public function actionIndex()
+    public function actionIndex($id)
     {
         if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
             return $this->redirect(['/site/login']);
         }
 
-        $searchModel = new TestTakerSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams);
+        $test = Test::findOne($id);
+        $dataProvider = new ActiveDataProvider([
+            'query' => TestTaker::find()->where(['test_id' => $id]),
+        ]);
 
         return $this->render('index', [
-            'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'test' => $test,
         ]);
     }
 

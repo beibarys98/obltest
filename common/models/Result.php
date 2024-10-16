@@ -72,6 +72,10 @@ class Result extends \yii\db\ActiveRecord
         return $this->hasOne(Test::class, ['id' => 'test_id']);
     }
 
+    public function getTestTaker(){
+        return $this->hasOne(TestTaker::class, ['test_taker.teacher_id' => 'teacher_id']);
+    }
+
     /**
      * {@inheritdoc}
      * @return \common\models\query\ResultQuery the active query used by this AR class.

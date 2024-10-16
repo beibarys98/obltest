@@ -20,7 +20,7 @@ use Yii;
  * @property Result[] $results
  * @property Subject $subject
  * @property TeacherAnswer[] $teacherAnswers
- * @property TestTaker[] $testTakers
+ * @property TestTaker $testTaker
  * @property User $user
  */
 class Teacher extends \yii\db\ActiveRecord
@@ -39,6 +39,11 @@ class Teacher extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
+            [['name', 'user_id','school', 'subject_id', 'language'], 'required'],
+            ['name', 'match', 'pattern' => '/^[А-ЯЁа-яё\s]+$/u', 'message' => Yii::t('app', 'Имя может содержать только кириллицу!')],
+            ['name', 'match', 'pattern' => '/^[^\s]/', 'message' => Yii::t('app', 'Имя не может начинаться с пробела!')],
+            ['name', 'match', 'pattern' => '/\s/', 'message' => Yii::t('app', 'Имя должно содержать минимум два слова!')],
+
             [['user_id', 'subject_id'], 'integer'],
             [['name', 'school', 'language'], 'string', 'max' => 255],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'id']],
@@ -111,14 +116,9 @@ class Teacher extends \yii\db\ActiveRecord
         return $this->hasMany(TeacherAnswer::class, ['teacher_id' => 'id']);
     }
 
-    /**
-     * Gets query for [[TestTakers]].
-     *
-     * @return \yii\db\ActiveQuery|\common\models\query\TestTakerQuery
-     */
-    public function getTestTakers()
+    public function getTestTaker()
     {
-        return $this->hasMany(TestTaker::class, ['teacher_id' => 'id']);
+        return $this->hasOne(TestTaker::class, ['teacher_id' => 'id']);
     }
 
     /**

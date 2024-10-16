@@ -1,7 +1,9 @@
 <?php
 
+use common\models\Test;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
-use yii\widgets\ActiveForm;
+use yii\bootstrap5\ActiveForm;
 
 /** @var yii\web\View $this */
 /** @var common\models\TestTaker $model */
@@ -14,7 +16,15 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'teacher_id')->textInput() ?>
 
-    <?= $form->field($model, 'test_id')->textInput() ?>
+    <?php
+    $testItems = ArrayHelper::map(Test::find()->all(), 'id', function($model) {
+        return $model->id . ' - ' . $model->title;
+    });    ?>
+
+    <?= $form->field($model, 'test_id')->dropDownList(
+        $testItems,
+        ['prompt' => 'Select a test']
+    ) ?>
 
     <?= $form->field($model, 'start_time')->textInput() ?>
 

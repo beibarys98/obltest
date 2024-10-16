@@ -4,8 +4,8 @@
 /** @var $results*/
 /** @var $testDP*/
 
+use common\models\TestTaker;
 use yii\grid\GridView;
-use yii\widgets\DetailView;
 
 \yii\web\YiiAsset::register($this);
 ?>
@@ -19,6 +19,11 @@ use yii\widgets\DetailView;
                 [
                     'attribute' => 'title',
                     'label' => 'Атауы'
+                ],
+                [
+                    'attribute' => 'subject_id',
+                    'label' => 'Пән',
+                    'value' => 'subject.subject'
                 ],
                 [
                     'attribute' => 'language',
@@ -37,9 +42,14 @@ use yii\widgets\DetailView;
             'dataProvider' => $results,
             'layout' => "{items}",
             'columns' => [
+                ['class' => 'yii\grid\SerialColumn'],
                 [
                     'attribute' => 'teacher.name',
                     'label' => 'Есімі',
+                ],
+                [
+                    'attribute' => 'teacher.school',
+                    'label' => 'Мекеме',
                 ],
                 [
                     'attribute' => 'result',

@@ -26,10 +26,11 @@ class SignupForm extends Model
             ['username', 'unique', 'targetClass' => '\common\models\User', 'message' => Yii::t('app','Этот логин уже занят!')],
             ['username', 'string', 'min' => 2, 'max' => 255],
             ['username', 'match', 'pattern' => '/^\S+$/', 'message' => Yii::t('app', 'Логин не может содержать пробелы!')],
-
+            ['username', 'match', 'pattern' => '/^[a-zA-Z0-9@_\-\.]+$/', 'message' => Yii::t('app', 'Логин может содержать только латинские буквы!')],
 
             ['password', 'required'],
             ['password', 'string', 'min' => Yii::$app->params['user.passwordMinLength']],
+            ['password', 'match', 'pattern' => '/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};":\\|,.<>\/?]*$/', 'message' => Yii::t('app', 'Пароль может содержать только латинские буквы, цифры и специальные символы!')],
         ];
     }
 

@@ -94,12 +94,16 @@ class TestController extends Controller
         $textColor = imagecolorallocate($image, 227, 41, 29);
         $fontPath = '/app/frontend/fonts/times.ttf';
 
+        //wrinting name
         $averageCharWidth = 9.5;
         $numChars = strlen($teacher->name);
         $textWidth = $numChars * $averageCharWidth;
         $cx = 950;
         $x = (int)($cx - ($textWidth / 2));
         imagettftext($image, 28, 0, $x, 760, $textColor, $fontPath, $teacher->name);
+
+        //writing number
+
 
         $newPath = Yii::getAlias('@webroot/certificates/')
             . Yii::$app->security->generateRandomString(8)
@@ -336,33 +340,21 @@ class TestController extends Controller
             return $this->redirect(['/site/login']);
         }
 
-        $test = Test::findOne($id);
-        $test->status = 'finished';
-        $test->save(false);
-
-        return $this->redirect(['view', 'id' => $id]);
-    }
-
-    public function actionPresent($id)
-    {
-        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
-            return $this->redirect(['/site/login']);
-        }
-
-        $test = Test::findOne($id);
-        $test->status = 'certificated';
-        $test->save(false);
-
+        //save results in pdf
         $results = new ActiveDataProvider([
             'query' => Result::find()
+                ->select(['teacher_id', 'result'])
                 ->andWhere(['test_id' => $id])
+                ->groupBy('teacher_id') // Group by teacher ID
                 ->orderBy(['result' => SORT_DESC]),
+            'pagination' => [
+                'pageSize' => false,
+            ],
         ]);
         $testDP = new ActiveDataProvider([
             'query' => Test::find()->andWhere(['id' => $id]),
         ]);
 
-        //save results in pdf
         $content = $this->renderPartial('result', [
             'results' => $results,
             'testDP' => $testDP,
@@ -383,6 +375,23 @@ class TestController extends Controller
         $result_pdf->test_id = $id;
         $result_pdf->path = $pdfFilePath;
         $result_pdf->save(false);
+
+        $test = Test::findOne($id);
+        $test->status = 'finished';
+        $test->save(false);
+
+        return $this->redirect(['view', 'id' => $id]);
+    }
+
+    public function actionPresent($id)
+    {
+        if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
+            return $this->redirect(['/site/login']);
+        }
+
+        $test = Test::findOne($id);
+        $test->status = 'certificated';
+        $test->save(false);
 
         //send certificates
         $topResults = Result::find()
@@ -431,22 +440,36 @@ class TestController extends Controller
         return $this->redirect(['view', 'id' => $id]);
     }
 
-    public function actionDownloadZip($type){
+    public function actionDownloadZip($type, $id){
         if(Yii::$app->user->isGuest || !Admin::findOne(['user_id' => Yii::$app->user->identity->id])){
             return $this->redirect(['/site/login']);
         }
 
         if($type == 'receipts'){
-            $filePaths = Payment::find()->select('payment')->all();
+            $filePaths = Payment::find()
+                ->andWhere(['test_id' => $id])
+                ->select('payment')
+                ->all();
             $zipFileName = 'Квитанциялар.zip';
         }elseif($type == 'certificates'){
-            $filePaths = File::find()->select('path')->andWhere(['like', 'path', '%.jpeg', false])->all();
+            $filePaths = File::find()
+                ->andWhere(['test_id' => $id])
+                ->andWhere(['like', 'path', '%.jpeg', false])
+                ->select('path')
+                ->all();
             $zipFileName = 'Сертификаттар.zip';
         }elseif ($type == 'reports') {
-            $filePaths = File::find()->select('path')->andWhere(['like', 'path', '%.pdf', false])->all();
+            $filePaths = File::find()
+                ->andWhere(['test_id' => $id])
+                ->andWhere(['like', 'path', '%.pdf', false])
+                ->select('path')
+                ->all();
             $zipFileName = 'Қатемен Жұмыстар.zip';
         }else{
-            $filePaths = ResultPdf::find()->select('path')->andWhere(['like', 'path', '%.pdf', false])->all();
+            $filePaths = ResultPdf::find()
+                ->andWhere(['like', 'path', '%.pdf', false])
+                ->select('path')
+                ->all();
             $zipFileName = 'Нәтижелер.zip';
         }
         $zip = new \ZipArchive();
@@ -589,7 +612,9 @@ class TestController extends Controller
             $answers = Answer::find()->andWhere(['question_id' => $question->id])->all();
             foreach ($answers as $a) {
                 if($a->formula){
-                    unlink($a->formula);
+                    if(file_exists($a->formula)){
+                        unlink($a->formula);
+                    }
                 }
                 $a->delete();
             }
@@ -598,7 +623,9 @@ class TestController extends Controller
                 $tA->delete();
             }
             if($question->formula){
-                unlink($question->formula);
+                if(file_exists($question->formula)){
+                    unlink($question->formula);
+                }
             }
             $question->delete();
         }
@@ -608,7 +635,9 @@ class TestController extends Controller
         }
 
         foreach ($resultPdfs as $rP) {
-            unlink($rP->path);
+            if(file_exists($rP->path)){
+                unlink($rP->path);
+            }
             $rP->delete();
         }
 

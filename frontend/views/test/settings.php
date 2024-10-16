@@ -16,31 +16,6 @@ $this->title = 'Баптаулар'
 
     <h1 class="text-center">Баптаулар</h1>
 
-    <div class="row w-100">
-        <div class="col-4 p-1">
-            <a href="<?= Url::to(['test/download-zip', 'type' => 'receipts']) ?>" class="btn btn-primary w-100">
-                Квитанцияларды жүктеп алу
-            </a>
-        </div>
-        <div class="col-4 p-1">
-            <a href="<?= Url::to(['test/download-zip', 'type' => 'certificates']) ?>" class="btn btn-warning w-100">
-                Сертификаттарды жүктеп алу
-            </a>
-        </div>
-        <div class="col-4 p-1">
-            <a href="<?= Url::to(['test/download-zip', 'type' => 'reports']) ?>" class="btn btn-danger w-100">
-                Қатемен жұмыстарды жүктеп алу
-            </a>
-        </div>
-    </div>
-    <div class="row w-100">
-        <a href="<?= Url::to(['test/download-zip', 'type' => 'results']) ?>" class="btn btn-success w-100">
-            Нәтижелерді жүктеп алу
-        </a>
-    </div>
-
-    <br>
-
     <div class="p-3 shadow-sm" style="border: 1px solid black; border-radius: 10px; margin: 0 auto; width: 500px;">
         <?php $form = ActiveForm::begin(); ?>
 

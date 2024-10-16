@@ -1,6 +1,8 @@
 <?php
 
 use common\models\Teacher;
+use common\models\TestTaker;
+use yii\bootstrap5\LinkPager;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\grid\ActionColumn;
@@ -26,6 +28,9 @@ $this->title = Yii::t('app', 'Мұғалімдер');
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
+        'pager' => [
+            'class' => LinkPager::class,
+        ],
         'columns' => [
             'id',
             [
@@ -51,12 +56,22 @@ $this->title = Yii::t('app', 'Мұғалімдер');
                 'label' => 'Тест тапсыру тілі'
             ],
             [
-                'class' => ActionColumn::className(),
-                'template' => '{update} {delete}',
-                'urlCreator' => function ($action, Teacher $model, $key, $index, $column) {
-                    return Url::toRoute([$action, 'id' => $model->id]);
+                'format' => 'raw',  // Ensures the link is not HTML-encoded
+                'value' => function ($model) {
+                    // Find the corresponding TestTaker model based on teacher_id
+                    $testTaker = TestTaker::find()->andWhere(['teacher_id' => $model->id])->one();
+
+                    // Ensure the TestTaker exists before creating the link
+                    if ($testTaker !== null) {
+                        return Html::a('edit', ['test-taker/update', 'id' => $testTaker->id]);
+                    }
+
+                    // Optionally, return a placeholder or null if no TestTaker is found
+                    return null;  // Or return 'No TestTaker';
                 }
             ],
+
+
         ],
     ]); ?>
 

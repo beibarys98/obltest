@@ -1,28 +1,166 @@
 <?php
 
+use common\models\TestTaker;
+use yii\bootstrap5\LinkPager;
+use yii\grid\ActionColumn;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\grid\GridView;
 use yii\widgets\Pjax;
-/** @var yii\web\View $this */
-/** @var common\models\TestTakerSearch $searchModel */
-/** @var yii\data\ActiveDataProvider $dataProvider */
-/** @var $purpose */
 
-$this->title = 'Қатысушылар';
+/** @var yii\web\View $this */
+/** @var yii\data\ActiveDataProvider $dataProvider */
+/** @var $test */
+
+$this->title = $test->title;
 ?>
 <div class="test-taker-index">
 
-    <h1 class="text-center"><?= Html::encode($this->title) ?></h1>
+    <div class="shadow-sm p-3" style="border: 1px solid black; border-radius: 10px; margin: 0 auto; width: 600px;">
+        <label for="readonly">Атауы</label>
+        <input id="readonly" class="form-control" type="text" placeholder="<?= $test->title ?>" readonly>
+        <div class="row">
+            <div class="col-4">
+                <label for="readonly">Пән</label>
+                <input id="readonly" class="form-control" type="text" placeholder="<?= $test->subject->subject ?>" readonly>
+            </div>
+            <div class="col-4">
+                <label for="readonly">Тест тапсыру тілі</label>
+                <input id="readonly" class="form-control" type="text" placeholder="<?= $test->language ?>" readonly>
+            </div>
+            <div class="col-4">
+                <label for="readonly">Нұсқа</label>
+                <input id="readonly" class="form-control" type="text" placeholder="<?= $test->version ?>" readonly>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-4">
+                <label for="readonly">Ашылуы</label>
+                <input id="readonly" class="form-control" type="text" placeholder="<?= date('d/m/y H:i:s', strtotime($test->start_time)) ?>" readonly>
+            </div>
+            <div class="col-4">
+                <label for="readonly">Жабылуы</label>
+                <input id="readonly" class="form-control" type="text" placeholder="<?= date('d/m/y H:i:s', strtotime($test->end_time)) ?>" readonly>
+            </div>
+            <div class="col-4">
+                <label for="readonly">Узақтығы</label>
+                <input id="readonly" class="form-control" type="text" placeholder="<?= date('H:i:s', strtotime($test->duration)) ?>" readonly>
+            </div>
+        </div>
+        <label for="readonly">Статус</label>
+        <input id="readonly" class="form-control" type="text" placeholder="<?= Yii::t('app', $test->status) ?>" readonly>
+
+        <br>
+
+        <div class="d-flex justify-content-center">
+            <div class="shadow-sm p-1" style="border: 1px solid black; border-radius: 10px; display: inline-block;">
+                <?php
+                if($test->status == 'new'){
+                    echo Html::a(Yii::t('app', 'Дайын') ,
+                        ['ready', 'id' => $test->id],
+                        ['class' => 'btn btn-success']);
+                }else if($test->status == 'ready'){
+                    echo Html::a(Yii::t('app', 'Жариялау'),
+                        ['publish', 'id' => $test->id],
+                        [
+                            'class' => 'btn btn-success',
+                            'data' => [
+                                'confirm' => Yii::t('app', 'Сенімдісіз бе?'),
+                            ]
+                        ]);
+                }else if($test->status == 'public'){
+                    echo Html::a(Yii::t('app', 'Аяқтау') ,
+                        ['test/end', 'id' => $test->id],
+                        [
+                            'class' => 'btn btn-warning',
+                            'data' => [
+                                'confirm' => Yii::t('app', 'Сенімдісіз бе?'),
+                            ]
+                        ]);
+
+                    echo Html::a(Yii::t('app', 'Тест') ,
+                        ['/test/view', 'id' => $test->id],
+                        ['class' => 'btn btn-primary ms-1']);
+
+                }else if($test->status == 'finished'){
+                    echo Html::a(Yii::t('app', 'Марапаттау') ,
+                        ['test/present', 'id' => $test->id],
+                        [
+                            'class' => 'btn btn-success',
+                            'data' => [
+                                'confirm' => Yii::t('app', 'Сенімдісіз бе?'),
+                            ]
+                        ]);
+
+                    echo Html::a(Yii::t('app', 'Тест') ,
+                        ['/test/view', 'id' => $test->id],
+                        ['class' => 'btn btn-primary ms-1']);
+
+                }else if($test->status == 'certificated'){
+                    echo Html::a(Yii::t('app', 'Нәтиже') ,
+                        ['/test/result', 'id' => $test->id],
+                        ['class' => 'btn btn-success', 'target' => '_blank']);
+
+                    echo Html::a(Yii::t('app', 'Тест') ,
+                        ['/test/view', 'id' => $test->id],
+                        ['class' => 'btn btn-primary ms-1']);
+                }
+                ?>
+
+                <?= Html::a(Yii::t('app', 'Өшіру'),
+                    ['test/delete', 'id' => $test->id],
+                    [
+                        'class' => 'btn btn-danger',
+                        'data' => [
+                            'confirm' => Yii::t('app', 'Сенімдісіз бе?'),
+                            'method' => 'post',
+                        ],
+                    ]) ?>
+            </div>
+        </div>
+    </div>
+
+    <br>
+
+    <div class="row w-100">
+        <div class="col-3 p-1">
+            <a href="<?= Url::to(['test/download-zip', 'type' => 'receipts', 'id' => $test->id]) ?>" class="btn btn-primary w-100">
+                Квитанцияларды жүктеп алу
+            </a>
+        </div>
+        <div class="col-3 p-1">
+            <a href="<?= Url::to(['test/download-zip', 'type' => 'certificates', 'id' => $test->id]) ?>" class="btn btn-warning w-100">
+                Сертификаттарды жүктеп алу
+            </a>
+        </div>
+        <div class="col-3 p-1">
+            <a href="<?= Url::to(['test/download-zip', 'type' => 'reports', 'id' => $test->id]) ?>" class="btn btn-danger w-100">
+                Қатемен жұмыстарды жүктеп алу
+            </a>
+        </div>
+        <div class="col-3 p-1">
+            <a href="<?= Url::to(['test/result', 'id' => $test->id]) ?>" class="btn btn-success w-100" target="_blank">
+                Нәтиже
+            </a>
+        </div>
+    </div>
+
+    <br>
 
     <?php Pjax::begin(); ?>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
-        'filterModel' => $searchModel,
+        'pager' => [
+            'class' => LinkPager::class,
+        ],
         'columns' => [
-            'id',
+            [
+                'attribute' => 'teacher_id',
+                'label' => 'ID'
+            ],
             [
                 'attribute' => 'username',
                 'label' => 'Логин',
@@ -32,16 +170,6 @@ $this->title = 'Қатысушылар';
                 'attribute' => 'name',
                 'label' => 'Т.А.Ә.',
                 'value' => 'teacher.name'
-            ],
-            [
-                'attribute' => 'subject',
-                'label' => 'Пән',
-                'value' => 'test.subject.subject'
-            ],
-            [
-                'attribute' => 'language',
-                'label' => 'Тіл',
-                'value' => 'test.language'
             ],
             [
                 'attribute' => 'created_at',
@@ -103,8 +231,8 @@ $this->title = 'Қатысушылар';
                                     'data-pjax' => 0
                                 ])
                             : '---' )
-                    . '<br>'
-                    . ($file
+                        . '<br>'
+                        . ($file
                             ? Html::a('Сертификат', Url::to(['test-taker/download',
                                 'id' => $model->teacher->id, 'type' => 'jpeg']),
                                 [
@@ -113,7 +241,7 @@ $this->title = 'Қатысушылар';
                                 ])
                             : '---')
                         . '<br>'
-                    . ($file2
+                        . ($file2
                             ? Html::a('Қатемен жұмыс', Url::to(['test-taker/download',
                                 'id' => $model->teacher->id, 'type' => 'pdf']),
                                 [
@@ -122,7 +250,14 @@ $this->title = 'Қатысушылар';
                                 ])
                             : '---');
                 }
-            ]
+            ],
+            [
+                'class' => ActionColumn::className(),
+                'template' => '{update} {delete}',
+                'urlCreator' => function ($action, TestTaker $model, $key, $index, $column) {
+                    return Url::toRoute([$action, 'id' => $model->id]);
+                }
+            ],
         ],
     ]); ?>
 

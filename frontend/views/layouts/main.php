@@ -47,7 +47,6 @@ Select2Asset::register($this);
         $menuItems[] = ['label' => 'Мұғалімдер', 'url' => ['/teacher/index']];
         $menuItems[] = ['label' => 'Пәндер', 'url' => ['/subject/index']];
         $menuItems[] = ['label' => 'Тесттер', 'url' => ['/test/index']];
-        $menuItems[] = ['label' => 'Қатысушылар', 'url' => ['/test-taker/index/']];
         $menuItems[] = ['label' => 'Баптаулар', 'url' => ['/test/settings/']];
     }
 
